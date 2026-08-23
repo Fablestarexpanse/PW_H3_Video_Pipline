@@ -22,3 +22,9 @@ frames,res,regime,refs,minutes,date,production,graph,job
 1,1344x768,mm_image_v1/11,0,0.11,2026-08-23,apricot_paper,mm_image_v1,hill_s120014
 1,1344x768,mm_image_v1/11,0,0.11,2026-08-23,apricot_paper,mm_image_v1,hill_s120015
 311,1184x672,mm_clip_v1/20,4,14.07,2026-08-23,apricot_paper,mm_clip_v1,b05_s130001
+311,1184x672,mm_clip_v1/20,1,13.14,2026-08-23,apricot_paper,mm_clip_v1,b01_s130002
+311,1184x672,mm_clip_v1/20,2,13.72,2026-08-23,apricot_paper,mm_clip_v1,b02_s130003
+311,1184x672,mm_clip_v1/20,3,14.27,2026-08-23,apricot_paper,mm_clip_v1,b03_s130004
+311,1184x672,mm_clip_v1/20,2,13.94,2026-08-23,apricot_paper,mm_clip_v1,b04_s130005
+311,1184x672,mm_clip_v1/20,3,14.05,2026-08-23,apricot_paper,mm_clip_v1,b06_s130006
+362,1184x672,mm_clip_v1/20,1,16.16,2026-08-23,apricot_paper,mm_clip_v1,b07_s130007
