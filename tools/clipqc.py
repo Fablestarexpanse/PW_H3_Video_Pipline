@@ -46,8 +46,10 @@ MANIFEST = paths.REPO / "calibration" / "manifest.json"
 
 
 def decimate(p: Path) -> np.ndarray | None:
-    out = subprocess.run([str(paths.FFMPEG), "-v", "error", "-i", str(p), "-vf", f"scale={W}:{H},format=gray",
-                          "-f", "rawvideo", "-"], capture_output=True).stdout
+    # -fps_mode passthrough: measure the frames that exist, not a CFR resample (which duplicated
+    # a frame across a concat boundary with an edit-list offset — measured 2026-08-23).
+    out = subprocess.run([str(paths.FFMPEG), "-v", "error", "-i", str(p), "-fps_mode", "passthrough",
+                          "-vf", f"scale={W}:{H},format=gray", "-f", "rawvideo", "-"], capture_output=True).stdout
     if not out:
         return None
     return np.frombuffer(out, dtype=np.uint8).reshape(-1, H, W).astype(np.float32)

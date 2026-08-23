@@ -47,3 +47,9 @@ Written as facts are discovered, not at the end.
   absent until the job finishes. `GET /queue` → `queue_running` / `queue_pending` lists of `[number, prompt_id, ...]`.
 - Outputs land under `output/<filename_prefix>…_00001_.png|mp4`; chain runs write `output/h3_chain/<run_name>/`.
 - `landed.py` measured: a 512×512 Krea-2 still queued → landed in ~25 s wall on a warm instance.
+
+## Assembly facts (2026-08-23)
+- Segments video-only; audio as PCM wav per segment, concat, mux once with `atrim` → audio duration == picture to the sample (AAC priming is declared in the edit list; ffprobe reads 38.875000 for 933 frames).
+- Always decode with `-fps_mode passthrough` when counting or sampling frames; CFR mode duplicates across a concat seam with an edit-list offset.
+- Tag font: `C:/Windows/Fonts/consola.ttf` (pass `--font` for another). ffmpeg drawtext wants the colon escaped: `C\:/Windows/...`.
+- A 3-slot 933-frame cut: assemble ~20 s, cutqc ~6 s, tag (854 tagged + 720 web) ~25 s.

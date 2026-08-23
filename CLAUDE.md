@@ -20,6 +20,7 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - `python tools/landed.py <slug> [--watch]` — copy finished renders out, ffprobe, filmstrip, renders.jsonl
 - `python tools/refqc.py <png> --kind sheet|crop|plate [--figures N] [--block LO HI] [--record slug]` — G4 measurement
 - `python tools/clipqc.py <clip.mp4> [--ref plate.png] [--frames N] [--one-shot]` — post-landing QC
+- `python tools/assemble.py <slug> <unit|.> <cut> [--head 24]` → `cutqc.py <cut.json>` → `tag.py <cut.json>` — the cut, its QC, its review copies
 - `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
 
 ## Founding rules (full list: spec §0)
