@@ -160,8 +160,12 @@ def beat_modes(lf: Path) -> list[str]:
 
 def check_line_file(lf: Path, approved_pics: set[int] | None, max_blocks: int, only: int | None) -> int:
     modes = beat_modes(lf)
-    raw = lf.read_text(encoding="utf-8")
+    with lf.open(encoding="utf-8", newline="") as fh:   # newline="": the bytes the loader sees, no CRLF translation
+        raw = fh.read()
     rc = 0
+    if chr(13) in raw:
+        print(f"REFUSE    {lf.name} [roundtrip] CRLF line endings — not the bytes that render; write it with LF line endings")
+        rc = 1
     physical = raw.split("\n")
     if physical and physical[-1] == "":
         physical = physical[:-1]
