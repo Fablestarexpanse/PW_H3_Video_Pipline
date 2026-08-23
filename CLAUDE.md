@@ -16,6 +16,8 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - `python tools/contract.py <slug>|--all` — cross-file facts agree (G3/G4/preflight/build)
 - `python tools/migrate.py` — bring productions to `TEMPLATE_VERSION` after a template/tool change
 - `python tools/preflight.py <slug> <unit|.> <file.lines>` — refuse a prompt before it costs a render (LAWS)
+- `python tools/render.py <slug> <unit|.> <job_id> [--dry-run|--proof|--requeue]` — queue a jobs.jsonl row
+- `python tools/landed.py <slug> [--watch]` — copy finished renders out, ffprobe, filmstrip, renders.jsonl
 - `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
 
 ## Founding rules (full list: spec §0)

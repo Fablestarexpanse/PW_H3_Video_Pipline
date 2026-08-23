@@ -40,3 +40,10 @@ Written as facts are discovered, not at the end.
 - Hooks are tracked in `hooks/` and enabled with `git config core.hooksPath hooks` (run once per clone; also
   done by `/start`). `pre-commit` runs `tools/smoke.py` then `tools/drift.py` (which calls `deploy.py --check`,
   so ComfyUI must be reachable — use `drift.py --no-comfy` manually if it is down, never skip the hook).
+
+## ComfyUI HTTP API (what render.py / landed.py use)
+- `POST http://127.0.0.1:8188/prompt` with `{"prompt": <api-format graph>, "client_id": "moviemaker-v2"}` → `{"prompt_id"}`;
+  a bad graph returns 400 with `node_errors`. `GET /history/<prompt_id>` → `{pid: {outputs: {node: {images: [{filename, subfolder, type}]}}, status: {status_str, completed, messages}}}`;
+  absent until the job finishes. `GET /queue` → `queue_running` / `queue_pending` lists of `[number, prompt_id, ...]`.
+- Outputs land under `output/<filename_prefix>…_00001_.png|mp4`; chain runs write `output/h3_chain/<run_name>/`.
+- `landed.py` measured: a 512×512 Krea-2 still queued → landed in ~25 s wall on a warm instance.

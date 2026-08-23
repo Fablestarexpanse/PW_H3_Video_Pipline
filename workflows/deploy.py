@@ -40,9 +40,33 @@ def repo_graphs() -> list[Path]:
     return sorted(p for p in HERE.glob("mm_*.json") if GRAPH_RE.match(p.name))
 
 
+VIRTUAL = {"MarkdownNote", "Note", "Reroute", "PrimitiveNode"}
+
+
+def api_matches_ui(src: Path) -> str | None:
+    """The committed .api.json must cover exactly the UI graph's real, non-muted nodes."""
+    api_p = src.with_suffix("").with_suffix(".api.json")
+    if not api_p.is_file():
+        return f"{api_p.name} missing"
+    ui = json.loads(src.read_text(encoding="utf-8"))
+    api = json.loads(api_p.read_text(encoding="utf-8"))
+    ui_ids = {str(n["id"]) for n in ui["nodes"] if n["type"] not in VIRTUAL and n.get("mode", 0) == 0}
+    api_ids = set(api)
+    if ui_ids != api_ids:
+        return f"{api_p.name} nodes differ from {src.name}: only-ui {sorted(ui_ids - api_ids)} only-api {sorted(api_ids - ui_ids)}"
+    for n in ui["nodes"]:
+        if str(n["id"]) in api and api[str(n["id"])]["class_type"] != n["type"]:
+            return f"{api_p.name} node {n['id']} class {api[str(n['id'])]['class_type']} != {n['type']}"
+    return None
+
+
 def check() -> int:
     bad = 0
     for src in repo_graphs():
+        err = api_matches_ui(src)
+        if err:
+            print(f"DIFFERS   {err}")
+            bad += 1
         dst = paths.COMFY_WORKFLOWS / src.name
         if not dst.is_file():
             print(f"MISSING   {src.name}  (not deployed)")
