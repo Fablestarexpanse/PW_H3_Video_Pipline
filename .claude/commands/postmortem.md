@@ -1,0 +1,3 @@
+POSTMORTEM (G6) for production $ARGUMENTS. Fill `<unit>/postmortem.md`: what shipped (actual frames/minutes vs the G5 quote from costs.csv), what went wrong (fault / root cause / check-fix-dropped), what the measurements said (costs.csv rows), what outlives the production.
+
+Every repeated finding: `python tools/findings.py add "<text>" --production <slug>` (bumps count on a repeat). Anything at count >= 2 must be promoted the same session — `findings.py promote <n> --check|--fix|--dropped` — with the shared tool/template/law changed in the same commit and `TEMPLATE_VERSION` bumped + `migrate.py` run if templates changed. `python tools/findings.py check` and `python tools/drift.py` must pass. A lesson left inside the production folder fails G6.

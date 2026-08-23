@@ -1,0 +1,3 @@
+BOARD for production $ARGUMENTS. One `jobs.jsonl` row per beat (`<beat>_s<seed>`), queue with `python tools/render.py <slug> <unit|.> --all-queued`, land with `python tools/landed.py <slug> --watch 60`. Every landed clip: `python tools/clipqc.py <clip> --ref <plate> --frames N` and its filmstrip. A clip that fails clipqc is re-rolled as a NEW row with a new seed; the old file is renamed `__rej_<reason>` on the drive, never deleted. When a beat has several landed takes, set `"pick": true` on the one that goes in the cut.
+
+Sweep the whole board (`clipqc.py F:/MovieMaker/<slug>/<unit>/clips/*.mp4 --ref ...`), not just the clip you just made. `python tools/costs.py ingest <slug>` after every batch.

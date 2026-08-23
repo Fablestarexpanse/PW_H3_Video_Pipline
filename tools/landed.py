@@ -105,6 +105,9 @@ def land(prod: Path, unit: Path, row: dict) -> int:
         row["error"] = detail[:500]
         print(f"ERROR     {row['id']}: {detail[:300]}")
         return 1
+    # wall-clock from ComfyUI's own timestamps (ms): execution_start -> execution_success
+    ts = {m[0]: m[1].get("timestamp") for m in status.get("messages", []) if isinstance(m, list) and len(m) == 2 and isinstance(m[1], dict)}
+    minutes = round((ts["execution_success"] - ts["execution_start"]) / 60000, 2) if ts.get("execution_success") and ts.get("execution_start") else None
     files = output_files(h, row)
     if not files:
         row["status"] = "error"
@@ -128,7 +131,7 @@ def land(prod: Path, unit: Path, row: dict) -> int:
         info = probe(dst)
         rec = {"job": row["id"], "unit": unit_name, "prompt_id": pid, "graph": row["graph"], "file": str(dst),
                "sha256": sha256(dst), "landed": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-               "seed": row.get("seed", row.get("base_seed")), **info}
+               "seed": row.get("seed", row.get("base_seed")), "minutes": minutes, **info}
         if is_video:
             expected = int(row.get("frames", 0))
             strip = paths.media_for(slug, *(([unit_name] if unit_name else []) + ["filmstrips"])) / f"{row['id']}.png"

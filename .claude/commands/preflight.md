@@ -1,0 +1,3 @@
+PROMPTS for production $ARGUMENTS. Write `<unit>/prompts/<unit>.lines`: one Ref2VA prompt per beat, in beats.csv order, each escaped to ONE line with `tools/preflight.escape` (never a blank line — the loader skips it and every later index shifts). Structure from the `h3-prompt-writing` skill; behaviour from `LAWS.md`; `<Picture N>` = identity slot + 1.
+
+Then `python tools/preflight.py <slug> <unit|.> <unit>.lines`. Every refusal is a decision, not a skim: discretion clause -> describe what IS seen; negative list -> describe what occupies the space; SCALE STATE -> delete it; frame zero -> describe it positively in retention_analysis; too many blocks -> cut a rule. Do not queue a line that refuses.
