@@ -1,0 +1,12 @@
+beat,frames,mode,refs,state_changes,cut_time
+b01,124,ref2va,wren_before;wren,,0.000
+b02,124,ref2va,darkmuse_master;wren,occlusion-tail:12,5.167
+b03,124,ref2va-master,darkmuse_master;wren,,10.333
+b04,124,ref2va,darkmuse_master;wren,,15.500
+b05,124,ref2va-master,darkmuse_master;wren,occlusion-tail:12,20.667
+b06,124,ref2va-master,darkmuse_master;wren,,25.833
+b07,124,ref2va,darkmuse_master;wren,,31.000
+b08,124,ref2va-master,darkmuse_master;wren,,36.167
+b09,124,ref2va-master,darkmuse_master;wren,,41.333
+b10,124,ref2va-master,darkmuse_master;wren,,46.500
+b11,226,ref2va-master,darkmuse_master;wren,,51.667

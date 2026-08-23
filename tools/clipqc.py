@@ -1,6 +1,7 @@
 """clipqc.py — numeric QC on every clip, after landing and before the cut (spec §3).
 
   python tools/clipqc.py <clip.mp4> [--ref plate.png] [--frames N] [--one-shot] [--grid 311,311,362] [--json]
+                         [--expect-master] [--occlusion-tail N]
   python tools/clipqc.py --selftest           calibration/manifest.json must separate good from bad
 
 Everything is computed from a 64x36 grayscale decimation of EVERY frame (cheap enough to
@@ -8,7 +9,11 @@ sweep a whole cut). Metrics rank suspicion; the filmstrip decides (founding rule
 
   frames     exact count (the widget lies) — refuses when --frames N differs
   ref_leak   max correlation of the first 4 s against --ref; refuses > 0.50 (measured +0.97 on the
-             fault, +0.03 after the fix)
+             fault, +0.03 after the fix). --expect-master inverts it for the reel format (beats.csv
+             mode ref2va-master): the clip MUST open on the master wide — refuses if frame-0..3
+             correlation < 0.50 (Wren Dark Muse beats opened at +0.999 by design)
+  --occlusion-tail N   the last N frames are a scripted occlusion to black: black frames and a
+             luminance cut inside that window are the design, not a fault
   blown      mean luminance > 150 on any frame — refuses (one-frame white pops on hard cuts)
   black      mean luminance < 8 on any frame — refuses
   cuts       |frame-to-frame luminance diff| > 20, adjacent (strobe) pairs and --grid slot
@@ -93,6 +98,7 @@ def measure(p: Path, ref: Path | None, grid: list[int] | None) -> dict:
         c = [corr(A[f], R) for f in range(min(4 * FPS, n))]
         m["ref_leak"] = round(max(c), 3)
         m["ref_leak_frame"] = int(np.argmax(c))
+        m["ref_open"] = round(max(c[:4]), 3)
     cuts = list(np.where(np.abs(np.diff(lum)) > THRESH["cut"])[0] + 1)
     strobe = {c for c in cuts if (c + 1) in cuts or (c - 1) in cuts}
     real = [int(c) for c in cuts if c not in strobe]
@@ -107,20 +113,28 @@ def measure(p: Path, ref: Path | None, grid: list[int] | None) -> dict:
     return m
 
 
-def verdict(m: dict, frames: int | None, one_shot: bool) -> list[str]:
+def verdict(m: dict, frames: int | None, one_shot: bool, expect_master: bool = False, occlusion_tail: int = 0) -> list[str]:
     if m.get("unreadable"):
         return ["unreadable"]
     f = []
-    if frames is not None and m["frames"] != frames:
-        f.append(f"frames {m['frames']} != expected {frames}")
-    if "ref_leak" in m and m["ref_leak"] > THRESH["ref_leak"]:
-        f.append(f"ref_leak {m['ref_leak']:+.3f} at frame {m['ref_leak_frame']} > {THRESH['ref_leak']} — the plate is being reproduced as picture")
+    n = m["frames"]
+    if frames is not None and n != frames:
+        f.append(f"frames {n} != expected {frames}")
+    if "ref_leak" in m:
+        if expect_master:
+            if m.get("ref_open", 0) < THRESH["ref_leak"]:
+                f.append(f"master_open {m['ref_open']:+.3f} over frames 0-3 < {THRESH['ref_leak']} — mode ref2va-master but the clip does not open on the master wide")
+        elif m["ref_leak"] > THRESH["ref_leak"]:
+            f.append(f"ref_leak {m['ref_leak']:+.3f} at frame {m['ref_leak_frame']} > {THRESH['ref_leak']} — the plate is being reproduced as picture")
+    tail_from = n - occlusion_tail if occlusion_tail else n
     if m["blown"]:
         f.append(f"blown frames {m['blown']} (luminance > {THRESH['blown']})")
-    if m["black"]:
-        f.append(f"black frames {m['black']} (luminance < {THRESH['black']})")
-    if one_shot and m["cuts"]:
-        f.append(f"cuts at {m['cuts']} on a one-shot clip")
+    black = [i for i in m["black"] if i < tail_from]
+    if black:
+        f.append(f"black frames {black} (luminance < {THRESH['black']})")
+    cuts = [c for c in m["cuts"] if c < tail_from]
+    if one_shot and cuts:
+        f.append(f"cuts at {cuts} on a one-shot clip")
     # Local block stats are ADVISORY until calibration/ holds a known-bad "local" case: on the
     # WTTB board (2026-08-23) peak/median > 25 flagged shipped clips as often as re-rolls, so
     # by the calibration rule it cannot refuse. Reported in the measured line; ranks suspicion.
@@ -169,6 +183,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("clips", nargs="*")
     ap.add_argument("--ref"); ap.add_argument("--frames", type=int); ap.add_argument("--one-shot", action="store_true")
     ap.add_argument("--grid"); ap.add_argument("--json", action="store_true"); ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--expect-master", action="store_true"); ap.add_argument("--occlusion-tail", type=int, default=0)
     a = ap.parse_args(argv)
     if a.selftest:
         return selftest()
@@ -178,7 +193,7 @@ def main(argv: list[str]) -> int:
     rc = 0
     for c in a.clips:
         m = measure(Path(c), Path(a.ref) if a.ref else None, grid)
-        faults = verdict(m, a.frames, a.one_shot)
+        faults = verdict(m, a.frames, a.one_shot, a.expect_master, a.occlusion_tail)
         if a.json:
             print(json.dumps({**m, "faults": faults}, ensure_ascii=False))
         else:

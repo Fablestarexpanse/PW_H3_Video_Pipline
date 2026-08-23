@@ -8,7 +8,7 @@ Refuses (exit 1) when any production has:
   - a file not in the template skeleton, or a required file missing
   - template_version older than templates/TEMPLATE_VERSION (run migrate.py)
   - a .py other than identity.py, or an identity.py field the template does not declare
-  - a prompt line whose <Picture N> is not a slot declared in identity CAST/LOCATIONS
+  - a prompt line whose <Picture N> is not a slot known to identity CAST/LOCATIONS or a manifest candidate
   - a workflow name not in routing.md
 or when a deployed ComfyUI graph's hash differs from workflows/ (deploy.py --check),
 or when findings.jsonl has a finding at count >= 2 still open.
@@ -87,8 +87,18 @@ def check_production(prod: Path) -> int:
         if g not in routed:
             fail(f"WORKFLOWS[{k!r}] = {g!r} not in routing.md")
 
+    # Structural check: every <Picture N> must map to a KNOWN slot — approved in identity, or a
+    # candidate that declares its slot in refs/manifest.json. Approval itself is contract/preflight's gate.
     slots = {ent.get("slot") for d in (getattr(ident, "CAST", {}), getattr(ident, "LOCATIONS", {}))
              for ent in d.values() if isinstance(ent.get("slot"), int)}
+    mf = prod / "refs" / "manifest.json"
+    if mf.is_file():
+        try:
+            for r in json.loads(mf.read_text(encoding="utf-8")).get("refs", []):
+                if isinstance(r.get("slot"), int):
+                    slots.add(r["slot"])
+        except json.JSONDecodeError as e:
+            fail(f"refs/manifest.json is not JSON ({e.msg})")
     pics_ok = {s + 1 for s in slots}
     for u in unit_list:
         for lf in sorted((u / "prompts").glob("*.lines")) if (u / "prompts").is_dir() else []:

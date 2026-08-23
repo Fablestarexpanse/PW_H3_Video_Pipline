@@ -93,7 +93,10 @@ class Result:
         return 1 if self.refusals else 0
 
 
-def check_prompt(text: str, label: str, approved_pics: set[int] | None, max_blocks: int) -> Result:
+def check_prompt(text: str, label: str, approved_pics: set[int] | None, max_blocks: int, mode: str = "") -> Result:
+    """mode 'ref2va-master' (beats.csv): frame zero IS <Picture 1>, the locked master wide — the reel
+    format. Then the frame-zero rule is satisfied by retention_analysis naming <Picture 1> as the
+    frame, and clipqc --expect-master refuses a clip that does NOT open on it."""
     r = Result(label)
     low = text.lower()
 
@@ -123,7 +126,10 @@ def check_prompt(text: str, label: str, approved_pics: set[int] | None, max_bloc
         for must in ("subject_definitions", "summary", "retention_analysis", "detailed_description"):
             if must not in secs:
                 r.refuse("sections", f"missing section {must}")
-        if "retention_analysis" in secs and not FRAME_ZERO.search(secs["retention_analysis"]):
+        if "retention_analysis" in secs and mode == "ref2va-master":
+            if "<Picture 1>" not in secs["retention_analysis"]:
+                r.refuse("frame_zero", "mode ref2va-master but retention_analysis never names <Picture 1> (the master wide that IS frame zero)")
+        elif "retention_analysis" in secs and not FRAME_ZERO.search(secs["retention_analysis"]):
             r.refuse("frame_zero", "retention_analysis does not describe frame zero positively (LAWS §1: the reference plate gets reproduced, corr +0.97)")
         if LOCK_RE.search(text):
             where = [s for s in ("summary", "retention_analysis", "detailed_description") if s in secs and LOCK_RE.search(secs[s])]
@@ -142,7 +148,18 @@ def check_prompt(text: str, label: str, approved_pics: set[int] | None, max_bloc
     return r
 
 
+def beat_modes(lf: Path) -> list[str]:
+    """mode per beat from the unit's beats.csv (same order as the lines); [] when absent."""
+    import csv
+    b = lf.parent.parent / "beats.csv"
+    if not b.is_file():
+        return []
+    with b.open(encoding="utf-8", newline="") as f:
+        return [r.get("mode", "").strip() for r in csv.DictReader(f) if r.get("beat", "").strip()]
+
+
 def check_line_file(lf: Path, approved_pics: set[int] | None, max_blocks: int, only: int | None) -> int:
+    modes = beat_modes(lf)
     raw = lf.read_text(encoding="utf-8")
     rc = 0
     physical = raw.split("\n")
@@ -170,7 +187,8 @@ def check_line_file(lf: Path, approved_pics: set[int] | None, max_blocks: int, o
         if escape(text) != stripped:
             r.refuse("roundtrip", "escape(unescape(line)) != line — a stray backslash or \\r is changing the prompt")
         rc |= r.report()
-        pr = check_prompt(text, label, approved_pics, max_blocks)
+        mode = modes[idx] if idx < len(modes) else ""
+        pr = check_prompt(text, label, approved_pics, max_blocks, mode)
         rc |= pr.report()
         print(f"measured  {label}: {len(text)} chars, {len(sections_of(text))} sections, {len(set(BLOCK_RE.findall(text)))} blocks, pics {sorted({int(n) for n in PIC_RE.findall(text)})}")
     return rc

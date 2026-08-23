@@ -1,0 +1,39 @@
+{
+ "world": "fablestar",
+ "refs": [
+  {
+   "file": "lan_APPROVED_800031.png",
+   "seed": 800031,
+   "status": "approved",
+   "approved_by": "MIGRATION.md 2026-08-22",
+   "sha256": "d46e83290334fb3c44a7d32d34be08f6b6387653fded7ac6a169230513b1a8e7",
+   "refqc": {
+    "file": "lan_APPROVED_800031.png",
+    "width": 1344,
+    "height": 768,
+    "mean": 199.76,
+    "median": 244.08,
+    "pct_over_235": 66.275,
+    "pct_under_20": 0.067,
+    "figures": 3
+   }
+  },
+  {
+   "file": "mira_APPROVED_800042.png",
+   "seed": 800042,
+   "status": "approved",
+   "approved_by": "MIGRATION.md 2026-08-22",
+   "sha256": "dfa48db048576ec91a3edaeb858d18248fd57fc4efea45ed18ad604615bf9569",
+   "refqc": {
+    "file": "mira_APPROVED_800042.png",
+    "width": 1344,
+    "height": 768,
+    "mean": 182.86,
+    "median": 231.86,
+    "pct_over_235": 0.793,
+    "pct_under_20": 0.21,
+    "figures": 3
+   }
+  }
+ ]
+}
