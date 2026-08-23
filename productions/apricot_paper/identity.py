@@ -7,7 +7,7 @@ blank or disagrees with beats.csv / prompts / measured audio. Do not add fields:
 
 TITLE = 'Apricot Paper Story'                      # refused while blank
 FORMAT = 'show'                     # "film" | "show"
-ASPECT = (0, 0)                 # (w, h) — measured from the master ref, never typed
+ASPECT = (1344, 768)            # G1: 16:9, H3-native; confirmed by the G0 look tests at this size
 WORLD = ""                      # worlds/<slug> this production draws canon from, or ""
 
 # Default is NO LoRA (routing.md, LoRA policy). Inline <lora:name:w> strings only when this production
