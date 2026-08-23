@@ -11,7 +11,7 @@ sweep a whole cut). Metrics rank suspicion; the filmstrip decides (founding rule
   ref_leak   max correlation of the first 4 s against --ref; refuses > 0.50 (measured +0.97 on the
              fault, +0.03 after the fix). --expect-master inverts it for the reel format (beats.csv
              mode ref2va-master): the clip MUST open on the master wide — refuses if frame-0..3
-             correlation < 0.50 (Wren Dark Muse beats opened at +0.999 by design)
+             correlation < 0.50 (measured: reel beats open at +0.999 by design)
   --occlusion-tail N   the last N frames are a scripted occlusion to black: black frames and a
              luminance cut inside that window are the design, not a fault
   blown      mean luminance > 150 on any frame — refuses (one-frame white pops on hard cuts)
@@ -136,7 +136,7 @@ def verdict(m: dict, frames: int | None, one_shot: bool, expect_master: bool = F
     if one_shot and cuts:
         f.append(f"cuts at {cuts} on a one-shot clip")
     # Local block stats are ADVISORY until calibration/ holds a known-bad "local" case: on the
-    # WTTB board (2026-08-23) peak/median > 25 flagged shipped clips as often as re-rolls, so
+    # calibration board (2026-08-23) peak/median > 25 flagged shipped clips as often as re-rolls, so
     # by the calibration rule it cannot refuse. Reported in the measured line; ranks suspicion.
     return f
 

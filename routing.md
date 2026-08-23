@@ -45,8 +45,8 @@ Context 22 / anchor head: segment 1 delivers its full length, every later segmen
 - **Krea-2**: prompt negatives do nothing at cfg 1.0. NegPip `(word:-1.2…-1.5)` works, for standing
   style-stack taxes only; don't push past −1.8 (backs go hollow). Width beats the word "three".
   The LoRA stack is inline `<lora:name:w>` syntax — the LoraManager stackers cannot be driven
-  headless (`AUTOCOMPLETE_TEXT_LORAS` is frontend-only). Trigger word `horiz4k` is injected by the
-  style stack via Trigger Word Toggle (untested off).
+  headless (`AUTOCOMPLETE_TEXT_LORAS` is frontend-only). A style LoRA's trigger word is prepended by
+  Trigger Word Toggle (untested off). The graph ships with NO stack: `identity.STYLE_STACK` is applied per job.
 - **Klein**: cannot carry Krea-2 LoRAs — look comes from the source image. Name only the change.
 - **H3**: negatives work only as positive statements of the mode (see `LAWS.md` §4). `<Picture N>`
   numbering follows slot index; unused slots are **bypassed** by `render.py` (proven: a bypassed

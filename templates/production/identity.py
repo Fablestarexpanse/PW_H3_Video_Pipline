@@ -10,23 +10,23 @@ FORMAT = ""                     # "film" | "show"
 ASPECT = (0, 0)                 # (w, h) — measured from the master ref, never typed
 WORLD = ""                      # worlds/<slug> this production draws canon from, or ""
 
-# Locked at kickoff. NegPip is the only edit point (LAWS §4). Inline <lora:name:w> syntax.
+# Locked at kickoff; [] = no LoRA. Inline <lora:name:w> strings; render.py applies them to every mm_image job.
 STYLE_STACK = []
 
 # One entry per recurring character. slot is the 0-based ref_image slot → <Picture slot+1>.
 # sheet paths are relative to the production folder and must be *_APPROVED_<seed>.png.
 CAST = {
-    # "wren": {"sheet": "refs/wren_APPROVED_811003.png", "seed": 811003, "slot": 1},
+    # "hero": {"sheet": "refs/hero_APPROVED_100003.png", "seed": 100003, "slot": 1},
 }
 
 # One entry per location template (an EMPTY room; conditioning only — LAWS §8).
 LOCATIONS = {
-    # "sunroom": {"sheet": "refs/sunroom_APPROVED_820102.png", "seed": 820102, "slot": 0},
+    # "kitchen": {"sheet": "refs/kitchen_APPROVED_100102.png", "seed": 100102, "slot": 0},
 }
 
 # Byte-identical (S1)/(S2) identity phrases. Pasted by code, never by hand.
 VOICES = {
-    # "wren": "The soft-spoken young woman, mid-twenties, low pitch, unhurried (S1)",
+    # "hero": "The soft-spoken young woman, mid-twenties, low pitch, unhurried (S1)",
 }
 
 # Measured by tools/audio.py, never typed. Empty dict = no external audio.

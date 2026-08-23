@@ -1,8 +1,7 @@
 # Format — the reel ("build a [theme] outfit with me")
 
-Ported from the Wren Production Bible (Format, Transitions, Piece-by-piece build, Performance
-style) and LAWS Appendix B. Measured on two eight-clip and one eleven-clip build; zero re-rolls
-on the last.
+Ported from a production Bible's Format/Transitions/Build/Performance sections and LAWS Appendix B.
+Measured on two eight-clip and one eleven-clip build; zero re-rolls on the last.
 
 ## What it is
 Not a cinematic short: a lookbook transformation reel. One recurring character, one locked
@@ -16,15 +15,15 @@ independent generations from sheets alone, no LoRA.
 - `<Picture 1>` = **the look for this beat**: the before-state sheet for beat 1, the theme's
   master wide for every later beat (the approved completed-look full-body still on the set).
 - `<Picture 2>` = the character turnaround sheet, every beat.
-- Every prompt restates body, hair, skin (porcelain-pale, freckled, "stays cool and pale in the
-  warm room light"), septum ring, choker and the set — per shot, the way a sheet does per panel.
+- Every prompt restates body, hair, skin (state its contrast with the room light explicitly), signature
+  accessory and the set — per shot, the way a sheet does per panel.
   **Double-anchor the body** (top of prompt + inside the outfit paragraph) whenever the skin block is
   present; they compete (LAWS §13).
 
 ## beats.csv modes
 - `ref2va-master` — a full-body beat that opens on the master wide exactly as framed. Frame zero
   IS `<Picture 1>`; `retention_analysis` must say so; `clipqc --expect-master` refuses a clip that
-  does not open on it (Dark Muse: 5 of 10 opened at +0.999).
+  does not open on it (measured: master-locked beats open at +0.999).
 - `ref2va` — a seated shot, a detail insert, an ECU: its own framing, so frame zero must be
   described positively (LAWS §1). The one beat that skipped this opened on a fuller body than the
   rest of the clip.
@@ -61,9 +60,8 @@ She is playful and self-assured — she already knows the outfit works: subtle s
 direct unbroken eye contact, a small hip shift, checking herself over, then back to the lens. Action
 carries the beat (pull the skirt into position, cinch the belt, throw the shawl, adjust hair, rotate
 hips, walk in), never a static hold. Captions: elegant serif, all caps, centred, one short line per
-beat. Music: `non_diegetic_music` carries it (mellow acoustic/world-folk; every cut on a beat); no VO,
-no voice locks. Themes rotate on a dark-bohemian base: woodland witch, desert nomad, dark muse,
-cottage fae, festival, cozy autumn, sea-witch.
+beat. Music: `non_diegetic_music` carries it (every cut on a beat); no VO, no voice locks. The theme
+rotation and base look are the production's, in its brief.
 
 ## When a new reel is requested
 Beat sheet (`beats.csv` + `slot_names.txt`), one still description per beat, one motion description

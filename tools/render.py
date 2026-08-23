@@ -16,7 +16,7 @@ ComfyUI rejects the prompt (node_errors printed verbatim). Never calls save_work
 
 Row schemas (jobs.jsonl, one JSON object per line; `status` queued|landed|rejected):
   mm_clip  {"id","graph":"mm_clip_v1","lines":"x.lines","line":3,"refs":{"0":"refs/a_APPROVED_1.png",...},
-            "audio":{"0":"audio/bar03.wav"},"frames":311,"seed":850003,"prefix":"..."}
+            "audio":{"0":"audio/beat03_vocals.wav"},"frames":311,"seed":850003,"prefix":"..."}
   mm_image {"id","graph":"mm_image_v1","lines","line","lora":"<lora:..>","negpip":"(x:-1.2)","seed","width","height","prefix"}
   mm_edit  {"id","graph":"mm_edit_v1","source":"refs/a_APPROVED_1.png","prompt":"...","seed","prefix"}
   mm_chain {"id","graph":"mm_chain_v1","plan":{...},"run_name","fingerprint","refs":{...},"cond_audio","mux_audio","base_seed"}
@@ -169,10 +169,11 @@ def build(prod: Path, unit: Path, row: dict, proof: bool) -> dict:
         api[g["lines"]]["inputs"]["index"] = int(row["line"])
         api[g["seed"]]["inputs"]["value"] = seed
         api[g["size"]]["inputs"]["width"], api[g["size"]]["inputs"]["height"] = w, h
-        if "lora" in row:
-            api[g["lora"]]["inputs"]["value"] = row["lora"]
-        if "negpip" in row:
-            api[g["negpip"]]["inputs"]["value"] = row["negpip"]
+        # The graph ships with NO LoRA and NO NegPip line: the stack is identity.STYLE_STACK (spec §2),
+        # a row may override it; NegPip is per job and empty unless the row says otherwise.
+        ident = skeleton.load_identity(prod)
+        api[g["lora"]]["inputs"]["value"] = row.get("lora", " ".join(getattr(ident, "STYLE_STACK", [])))
+        api[g["negpip"]]["inputs"]["value"] = row.get("negpip", "")
         api[g["prefix"]]["inputs"]["filename_prefix"] = prefix
 
     elif graph.startswith("mm_edit"):

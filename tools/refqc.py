@@ -6,8 +6,8 @@
 Measures: mean luminance (0-255) · median · % pixels > 235 · % pixels < 20 · figure count by
 column gap scan (content columns separated by backdrop-coloured gaps) · size.
 KNOWN FAILURE of the figure count: views that overlap horizontally (loose hair spanning the gap
-on a 768-wide portrait sheet — Wren 811003) read as ONE run. Counted 3/3 on every landscape
-1344-wide sheet measured (Lan, Mira, Kaito, Hina) and on Wren 810003. When it reads 1 on a sheet
+on a 768-wide portrait sheet) read as ONE run. Counted 3/3 on every landscape 1344-wide sheet
+measured (four characters across two productions) and on one portrait sheet. When it reads 1 on a sheet
 that plainly shows three views, omit --figures and count by eye; do not lower the threshold.
 Refuses (exit 1) when: % > 235 >= 1.5 for crops and plates (LAWS §8: a 26 % near-white macro
 cut clips to a white void; a turnaround SHEET is on white by design, so --kind sheet waives
@@ -47,7 +47,7 @@ def figure_count(img: Image.Image) -> tuple[int, list[tuple[int, int]]]:
     diff = np.abs(a - bg).sum(axis=2) > 60          # pixel is "content"
     band = diff[int(h * 0.15): int(h * 0.85)]         # middle 70 %: skips painted floors, shadows, debris
     col = band.mean(axis=0)                           # fraction of content per column
-    content = col > 0.05       # a soft backdrop vignette reads ~0.04 'content' in the gaps (Wren 810003)
+    content = col > 0.05       # a soft backdrop vignette reads ~0.04 'content' in the gaps (measured on a portrait sheet)
     runs, start = [], None
     for x, c in enumerate(content):
         if c and start is None:
