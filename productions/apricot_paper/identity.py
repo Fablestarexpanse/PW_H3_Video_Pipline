@@ -12,7 +12,7 @@ WORLD = ""                      # worlds/<slug> this production draws canon from
 
 # Default is NO LoRA (routing.md, LoRA policy). Inline <lora:name:w> strings only when this production
 # has proven one; render.py applies them to every mm_image job.
-STYLE_STACK = ["<lora:ApricotPaper_Krea2_V1.0:1.0>"]   # the production's style; weight to be settled by the G0 look tests (0.8 vs 1.0)
+STYLE_STACK = ["<lora:ApricotPaper_Krea2_V1.0:0.8>"]   # G0 approved 2026-08-23: 0.8 (more depth in fur/metal than 1.0; same world)
 
 # One entry per recurring character. slot is the 0-based ref_image slot → <Picture slot+1>.
 # sheet paths are relative to the production folder and must be *_APPROVED_<seed>.png.
