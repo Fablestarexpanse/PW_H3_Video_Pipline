@@ -1,6 +1,6 @@
 """assemble.py — frame-exact segments, stream-copy concat, full rebuild every time (spec §3).
 
-  python tools/assemble.py <slug> <unit|.> <cut_name> [--head 24] [--dry-run]
+  python tools/assemble.py <slug> <unit|.> <cut_name> [--head 24] [--transition N] [--dry-run]
 
 Source per beat (the named SRC): the one jobs.jsonl row for that beat (id = "<beat>_s<seed>")
 with status landed — or, when several landed, the one with "pick": true. Refuses when a beat
@@ -11,8 +11,16 @@ Segments are VIDEO ONLY (audio in a segment gives the concat an edit-list offset
 non-monotonic DTS at the first boundary). Audio: the identity.AUDIO master, or the clips' own
 audio trimmed per segment to PCM and concatenated; either is muxed once over the stream-copied
 picture with atrim to the exact picture length (audio == picture to the sample).
-Writes <media>/<unit>/cuts/<cut_name>.mp4 and <cut_name>.json (SRC table, LEN, boundaries).
-Never deletes a render; only the cut's own segments are rebuilt.
+
+--transition N (frames, default 0 = hard cut): every internal slot boundary becomes an N-frame
+crossfade dissolve instead of a stream-copy join. Each transition consumes N frames from the tail
+of the earlier segment and N frames from the head of the later one (standard editorial overlap),
+so the master is (n_slots-1)*N frames SHORTER than the sum of beats.csv frames — this is by
+design, not a fault; cutqc checks against the true post-transition total, not the beats.csv sum.
+Requires re-encoding via ffmpeg's xfade/acrossfade filters (no stream-copy path when N>0).
+
+Writes <media>/<unit>/cuts/<cut_name>.mp4 and <cut_name>.json (SRC table, LEN, boundaries,
+transition). Never deletes a render; only the cut's own segments are rebuilt.
 """
 from __future__ import annotations
 
@@ -83,20 +91,23 @@ def run(cmd: list[str]) -> None:
         raise Refuse(f"ffmpeg failed: {' '.join(cmd[:6])}…\n{r.stderr[-800:]}")
 
 
-def assemble(prod: Path, unit: Path, name: str, head: int, dry: bool) -> int:
+def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry: bool) -> int:
     ident = skeleton.load_identity(prod)
     beats = beats_of(unit)
     if not beats:
         raise Refuse("beats.csv is empty")
     names = slot_names(unit, len(beats))
     srcs = pick_sources(unit, beats)
+    if transition and transition * 2 >= min(s["frames"] for s in srcs):
+        raise Refuse(f"--transition {transition} f is not less than half the shortest beat's frames — overlap would eat a whole beat")
     clips = media_dir(prod, unit, "clips")
     cuts = media_dir(prod, unit, "cuts")
     seg_dir = cuts / f"{name}_segments"
     master_audio = (prod / ident.AUDIO["master"]) if ident.AUDIO.get("master") else None
     own_audio = master_audio is None
 
-    print(f"SRC table for {name} (head {head} f, {'master audio' if master_audio else 'clip audio'}):")
+    trans_note = f", {transition}f dissolve" if transition else ", hard cuts"
+    print(f"SRC table for {name} (head {head} f, {'master audio' if master_audio else 'clip audio'}{trans_note}):")
     total = 0
     plan = []
     for i, (s, label) in enumerate(zip(srcs, names)):
@@ -142,14 +153,25 @@ def assemble(prod: Path, unit: Path, name: str, head: int, dry: bool) -> int:
         lst.append(seg)
         print(f"built     {seg.name}: {got} f")
 
-    listfile = seg_dir / "concat.txt"
-    listfile.write_text("".join(f"file '{s.as_posix()}'\n" for s in lst), encoding="utf-8")
     picture = cuts / f"{name}_picture.mp4"
-    run([str(paths.FFMPEG), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listfile), "-c", "copy", str(picture)])
+    transition_meta = {"type": "cut", "frames": 0, "boundaries": []}
+    if transition:
+        final_total, boundaries = build_xfade_video(lst, [p["frames"] for p in plan], transition, picture)
+        transition_meta = {"type": "dissolve", "frames": transition, "boundaries": boundaries}
+    else:
+        listfile = seg_dir / "concat.txt"
+        listfile.write_text("".join(f"file '{s.as_posix()}'\n" for s in lst), encoding="utf-8")
+        run([str(paths.FFMPEG), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listfile), "-c", "copy", str(picture)])
+        final_total = total
+
     out = cuts / f"{name}.mp4"
-    dur = total / FPS
+    dur = final_total / FPS
     if master_audio:
         audio_src = master_audio
+    elif transition:
+        wavs = [Path(p["audio_segment"]) for p in plan]
+        audio_src = seg_dir / "audio.wav"
+        build_xfade_audio(wavs, [p["frames"] for p in plan], transition, audio_src)
     else:
         alist = seg_dir / "concat_audio.txt"
         alist.write_text("".join(f"file '{Path(p['audio_segment']).as_posix()}'\n" for p in plan), encoding="utf-8")
@@ -159,25 +181,83 @@ def assemble(prod: Path, unit: Path, name: str, head: int, dry: bool) -> int:
          "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-ar", "48000", "-b:a", "192k",
          "-af", f"atrim=0:{dur:.6f},asetpts=PTS-STARTPTS", "-movflags", "+faststart", str(out)])
     info = landed.probe(out)
+
+    # tag_end_frame: where a slot's on-screen label should stop — the transition midpoint when
+    # dissolving, the plain cumulative sum on a hard cut (degenerates to the old end_frame exactly).
+    cum, tag_ends = 0, []
+    for i, p in enumerate(plan):
+        cum += p["frames"]
+        if transition and i < len(plan) - 1:
+            cum -= transition
+            tag_ends.append(round(cum + transition / 2))
+        else:
+            tag_ends.append(cum)
+    for p, t in zip(plan, tag_ends):
+        p["end_frame"] = t
+
     meta = {"cut": name, "production": prod.name, "unit": unit.name if unit != prod else None, "fps": FPS,
-            "head": head, "total_frames": total, "audio": str(master_audio) if master_audio else "clip",
+            "head": head, "total_frames": final_total, "audio": str(master_audio) if master_audio else "clip",
+            "transition": transition_meta,
             "master": str(out), "slots": plan, "LEN": [p["frames"] for p in plan], "SRC": [Path(p["src"]).name for p in plan]}
     (cuts / f"{name}.json").write_text(json.dumps(meta, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"\nassembled {out}: {info['frames']} f {info['width']}x{info['height']} {info['duration']:.3f} s; table {name}.json")
-    if info["frames"] != total:
-        raise Refuse(f"master has {info['frames']} frames, beats sum to {total}")
+    if info["frames"] != final_total:
+        raise Refuse(f"master has {info['frames']} frames, expected {final_total}" +
+                     (f" ({total} beats sum - {(len(plan)-1)*transition} f transition overlap)" if transition else f" (beats sum {total})"))
     return 0
+
+
+def build_xfade_video(segs: list[Path], frames: list[int], D: int, out: Path) -> tuple[int, list[int]]:
+    """Chain xfade across all segments. offset_k = duration(merged_k) - D, in seconds
+    (duration(merged_k) = sum(frames[:k+1]) - k*D frames — each prior xfade already ate D frames)."""
+    n = len(segs)
+    inputs: list[str] = []
+    for s in segs:
+        inputs += ["-i", str(s)]
+    filt = []
+    prev = "[0:v]"
+    cum = frames[0]
+    boundaries = []
+    for k in range(1, n):
+        off_frames = cum - D
+        boundaries.append(off_frames)
+        out_lbl = f"[v{k}]"
+        filt.append(f"{prev}[{k}:v]xfade=transition=fade:duration={D / FPS:.6f}:offset={off_frames / FPS:.6f}{out_lbl}")
+        cum = cum + frames[k] - D
+        prev = out_lbl
+    final_lbl = prev.strip("[]")
+    run([str(paths.FFMPEG), "-y", "-loglevel", "error", *inputs, "-filter_complex", ";".join(filt),
+         "-map", f"[{final_lbl}]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "16",
+         "-pix_fmt", "yuv420p", "-video_track_timescale", "24000", str(out)])
+    return cum, boundaries
+
+
+def build_xfade_audio(wavs: list[Path], frames: list[int], D: int, out: Path) -> None:
+    n = len(wavs)
+    inputs: list[str] = []
+    for w in wavs:
+        inputs += ["-i", str(w)]
+    filt = []
+    prev = "[0:a]"
+    for k in range(1, n):
+        out_lbl = f"[a{k}]"
+        filt.append(f"{prev}[{k}:a]acrossfade=d={D / FPS:.6f}:c1=tri:c2=tri{out_lbl}")
+        prev = out_lbl
+    final_lbl = prev.strip("[]")
+    run([str(paths.FFMPEG), "-y", "-loglevel", "error", *inputs, "-filter_complex", ";".join(filt),
+         "-map", f"[{final_lbl}]", "-c:a", "pcm_s16le", "-ar", "48000", str(out)])
 
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(add_help=False)
     ap.add_argument("slug"); ap.add_argument("unit"); ap.add_argument("name")
-    ap.add_argument("--head", type=int, default=24); ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--head", type=int, default=24); ap.add_argument("--transition", type=int, default=0)
+    ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)
     prod = skeleton.PRODUCTIONS / a.slug
     unit = prod if a.unit == "." else prod / a.unit
     try:
-        return assemble(prod, unit, a.name, a.head, a.dry_run)
+        return assemble(prod, unit, a.name, a.head, a.transition, a.dry_run)
     except Refuse as e:
         print(f"\nREFUSE: {e}")
         return 1

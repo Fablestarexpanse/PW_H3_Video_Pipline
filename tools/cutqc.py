@@ -3,13 +3,19 @@
   python tools/cutqc.py <cut.json>        the table assemble.py wrote beside the master
 
 Refuses (exit 1) on any mismatch — never loosen a tolerance:
-  frames     master frame count != sum of beats.csv frames (LEN)
+  frames     master frame count != meta.total_frames (beats.csv sum, minus transition overlap
+             when the cut has one)
   streams    any segment's codec / width / height / frame rate / pix_fmt differs from the rest,
              or from the master
   blown      any frame mean luminance > 150       black   any frame < 8
-  boundary   at every slot boundary F_k the master's frame F_k is not the first frame of segment
-             k+1 and frame F_k-1 is not the last frame of segment k (decimated-frame correlation
-             < 0.98) — a stale or mis-trimmed segment shows here
+  boundary   HARD CUT (no transition): at every slot boundary F_k the master's frame F_k is not
+             the first frame of segment k+1 and frame F_k-1 is not the last frame of segment k
+             (decimated-frame correlation < 0.98) — a stale or mis-trimmed segment shows here.
+             DISSOLVE (transition.frames > 0): at every transition window, the frame just before
+             it must still match the earlier segment's tail (>=0.9) and the frame just after it
+             must match the later segment's head (>=0.9) — proves the blend runs between the
+             correct two clips — and no two consecutive frames inside the window may be identical
+             (a frozen frame means the crossfade silently did not run).
   audio      audio stream duration differs from picture by more than 2 ms
 Prints every measurement.
 """
@@ -57,10 +63,10 @@ def main(argv: list[str]) -> int:
     if A is None:
         print(f"REFUSE: {master} unreadable"); return 1
     n = len(A)
-    total = sum(meta["LEN"])
-    print(f"measured  frames {n} vs LEN sum {total}")
+    total = meta.get("total_frames", sum(meta["LEN"]))
+    print(f"measured  frames {n} vs expected {total}")
     if n != total:
-        faults.append(f"frames {n} != beats sum {total}")
+        faults.append(f"frames {n} != expected {total}")
 
     ms = streams(master)
     msig = sig(ms["video"])
@@ -83,19 +89,42 @@ def main(argv: list[str]) -> int:
     if len(black):
         faults.append(f"black frames {list(black[:12])}")
 
-    worst = 1.0
-    for k, slot in enumerate(meta["slots"]):
-        S = clipqc.decimate(Path(slot["segment"]))
-        start = slot["end_frame"] - slot["frames"]
-        end = slot["end_frame"]
-        if S is None or end > n:
-            faults.append(f"boundary slot {slot['slot']:02d}: segment unreadable or beyond master"); continue
-        c_first = clipqc.corr(A[start], S[0])
-        c_last = clipqc.corr(A[end - 1], S[-1])
-        worst = min(worst, c_first, c_last)
-        if c_first < 0.98 or c_last < 0.98:
-            faults.append(f"boundary slot {slot['slot']:02d} ({slot['beat']}): first {c_first:.3f} last {c_last:.3f} — segment and master disagree at frames {start}/{end-1}")
-    print(f"measured  boundary drift: worst first/last-frame correlation {worst:.3f} over {len(meta['slots'])} slots")
+    trans = meta.get("transition", {"type": "cut", "frames": 0, "boundaries": []})
+    if trans.get("frames", 0) > 0:
+        D = trans["frames"]
+        segs = [clipqc.decimate(Path(s["segment"])) for s in meta["slots"]]
+        worst_order = 1.0
+        for j, off in enumerate(trans["boundaries"]):
+            segA, segB = segs[j], segs[j + 1]
+            if segA is None or segB is None or off < 0 or off + D > n:
+                faults.append(f"transition {j+1:02d}: segment unreadable or window out of range"); continue
+            window = A[off:off + D]
+            tailA, headB = segA[-1], segB[0]
+            c_first_A, c_first_B = clipqc.corr(window[0], tailA), clipqc.corr(window[0], headB)
+            c_last_A, c_last_B = clipqc.corr(window[-1], tailA), clipqc.corr(window[-1], headB)
+            worst_order = min(worst_order, c_first_A - c_first_B, c_last_B - c_last_A)
+            if c_first_A <= c_first_B:
+                faults.append(f"transition {j+1:02d} ({meta['slots'][j]['beat']}→{meta['slots'][j+1]['beat']}): window start looks more like the later clip ({c_first_B:.3f}) than the earlier one ({c_first_A:.3f}) — offset is wrong")
+            if c_last_B <= c_last_A:
+                faults.append(f"transition {j+1:02d} ({meta['slots'][j]['beat']}→{meta['slots'][j+1]['beat']}): window end looks more like the earlier clip ({c_last_A:.3f}) than the later one ({c_last_B:.3f}) — offset is wrong")
+            frozen = [i for i in range(len(window) - 1) if np.array_equal(window[i], window[i + 1])]
+            if frozen:
+                faults.append(f"transition {j+1:02d} ({meta['slots'][j]['beat']}→{meta['slots'][j+1]['beat']}): frames {frozen} identical to their neighbor — the crossfade did not run")
+        print(f"measured  {len(trans['boundaries'])} dissolve transition(s), {D} f each; worst handoff margin {worst_order:.3f} (>0 means correctly ordered)")
+    else:
+        worst = 1.0
+        for k, slot in enumerate(meta["slots"]):
+            S = clipqc.decimate(Path(slot["segment"]))
+            start = slot["end_frame"] - slot["frames"]
+            end = slot["end_frame"]
+            if S is None or end > n:
+                faults.append(f"boundary slot {slot['slot']:02d}: segment unreadable or beyond master"); continue
+            c_first = clipqc.corr(A[start], S[0])
+            c_last = clipqc.corr(A[end - 1], S[-1])
+            worst = min(worst, c_first, c_last)
+            if c_first < 0.98 or c_last < 0.98:
+                faults.append(f"boundary slot {slot['slot']:02d} ({slot['beat']}): first {c_first:.3f} last {c_last:.3f} — segment and master disagree at frames {start}/{end-1}")
+        print(f"measured  boundary drift: worst first/last-frame correlation {worst:.3f} over {len(meta['slots'])} slots")
 
     if ms["audio"]:
         vdur = n / meta["fps"]
