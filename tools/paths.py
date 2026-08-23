@@ -15,6 +15,10 @@ import shutil
 import sys
 from pathlib import Path
 
+# Windows consoles default to cp1252; workflow names contain em-dashes and macrons.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 REPO = Path(__file__).resolve().parent.parent
 
 _DEFAULTS = {
