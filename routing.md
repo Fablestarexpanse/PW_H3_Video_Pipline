@@ -64,6 +64,13 @@ int8 model — it is the one candidate under (a), pending a proof segment.
   LOCATION there in any multi-reference clip, never a character: a character at slot 0 produced a
   flat character-sheet lineup with the location ignored; moving the location to slot 0 with identical
   prompt content produced the composited scene (apricot_paper, 2026-08-23).
+- **A locked shot at a symmetric architectural plate must state camera asymmetry explicitly**, or
+  `ref_leak` climbs beat over beat: a sequence of beats each anchored "exactly as the previous beat
+  left them" drifts toward the plate's own centered, head-on composition (apricot_paper gate:
+  b02 leak 0.03 → b05 0.42 → b06 0.7–0.9 before a fix). Naming a three-quarter angle that favors one
+  side and pushes the plate's centerline off-frame-center dropped it to 0.10 with an unchanged cast
+  and location (2026-08-23). Don't leave framing at "medium-wide" defaults on a plate with strong
+  bilateral symmetry (an arch, a hearth, a symmetric facade).
 
 ## Retired / not routed
 Everything in ComfyUI `workflows/archive/` (95 graphs, moved 2026-08-22, not deleted). No

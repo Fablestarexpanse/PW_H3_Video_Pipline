@@ -118,6 +118,7 @@ def land(prod: Path, unit: Path, row: dict) -> int:
     slug = prod.name
     unit_name = unit.name if unit != prod else None
     rc = 0
+    dst_names: list[str] = []
     for src in files:
         is_video = src.suffix.lower() in VIDEO_EXT
         if is_video:
@@ -126,6 +127,7 @@ def land(prod: Path, unit: Path, row: dict) -> int:
             dst_dir = paths.media_for(slug, "refs", "candidates")
         dst_dir.mkdir(parents=True, exist_ok=True)
         dst = dst_dir / f"{row['id']}__{src.name}"
+        dst_names.append(dst.name)
         if not dst.is_file():
             shutil.copyfile(src, dst)
         info = probe(dst)
@@ -153,7 +155,10 @@ def land(prod: Path, unit: Path, row: dict) -> int:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     if row["status"] != "refused_frames":
         row["status"] = "landed"
-    row["landed_files"] = [str(paths.media_for(slug)) and f.name for f in files]
+    # landed_files must match what's actually on disk in clips/ (row['id']+'__' prefixed), not the
+    # bare ComfyUI output name -- assemble.py resolves clips by this field (measured 2026-08-23: a
+    # stale un-prefixed name here silently pointed every beat's SRC lookup at a nonexistent file).
+    row["landed_files"] = dst_names
     return rc
 
 
