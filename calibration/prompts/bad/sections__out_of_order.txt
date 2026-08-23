@@ -1,0 +1,17 @@
+summary:
+A clip.
+
+subject_definitions:
+<Picture 1> is <Subject 1>.
+
+retention_analysis:
+<Picture 1> fully_preserved. First frame: medium.
+
+detailed_description:
+[00:00.000] She stands.
+
+overall_soundscape:
+Quiet.
+
+non_diegetic_music:
+None.

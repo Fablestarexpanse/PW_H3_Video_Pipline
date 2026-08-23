@@ -15,6 +15,7 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - `python tools/new_production.py <slug> --format film|show --title T [--unit 'S01E01 - N']` — the only way a production is created
 - `python tools/contract.py <slug>|--all` — cross-file facts agree (G3/G4/preflight/build)
 - `python tools/migrate.py` — bring productions to `TEMPLATE_VERSION` after a template/tool change
+- `python tools/preflight.py <slug> <unit|.> <file.lines>` — refuse a prompt before it costs a render (LAWS)
 - `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
 
 ## Founding rules (full list: spec §0)

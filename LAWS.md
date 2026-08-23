@@ -30,7 +30,7 @@ Unspecified things get filled from priors, and the priors are dramatic.
 
 **Move:** before writing a prohibition, answer *what is it doing instead* and write that.
 Pick business that leaves no residue (walking, holding a rail — not fluids, not food).
-→ `preflight: frame_zero_positive`
+→ `preflight: frame_zero`
 
 ## 2 · A vivid description outranks a prohibition attached to it
 `SCALE STATE` ending "never by framing wide" was otherwise a list of things only visible from
@@ -48,7 +48,7 @@ Six renders were burned on rungs 1–2 before rung 3 worked first time.
 ## 3 · "Not shown" is obeyed about the thing you want to see
 A kill read as a touch for three versions because an earlier draft said *"the contact itself
 is never shown."* Discretion written in one draft survives into drafts that no longer want it.
-→ `preflight: discretion_clauses` — `never shown · out of view · hidden · not visible ·
+→ `preflight: discretion` — `never shown · out of view · hidden · not visible ·
 off-screen · implied · we do not see`. Every hit is a decision, not a skim.
 
 ## 4 · Negatives work on objects, never on modes, camera positions or absences
@@ -65,7 +65,7 @@ embedded as positives (*"hammer never touches the water"*, *"exactly ONE weapon"
 the ink of the linework around them"* · *"a smooth blank ovoid, bare and unbroken like a
 frosted lamp bulb"* · *"plain bare skin from elbow to wrist, the same clean skin as the backs
 of her hands."* Point at something already in frame.
-→ `preflight: stale_negatives` (a `no X` carried from a previous look)
+→ `preflight: stale_neg` (a `no X` carried from a previous look)
 
 ## 5 · Continuity is a timed STATE, not an event
 Lives in `retention_analysis`. *"Clean in EVERY frame until 00:12.400. Blood appears at
@@ -111,13 +111,13 @@ makes the model take the composition that satisfies the most constraints at once
 **Counter-move: write coverage positively** — alternate wide → tight → tight → wide, lens and
 DOF per shot, a minimum number of inserts, one low angle. Past the template's block count,
 the next fix is cutting a rule, not adding one.
-→ `preflight: block_count`
+→ `preflight: blocks`
 
 ## 11 · Say the important thing three times, in three sections
 A locked camera is what H3 most reliably ignores; state the lock in `summary`,
 `retention_analysis` and the shot description. Repetition across sections survives the
 attention budget; repetition inside one paragraph is padding.
-→ `preflight: lock_stated_thrice` (advisory)
+→ `preflight: lock_thrice` (advisory)
 
 ## 12 · Adjectives compound; name the noun before the strangeness
 "Lean" + "stubble" + "tired" → strung out; three ageing cues → seventy. One or two per axis.

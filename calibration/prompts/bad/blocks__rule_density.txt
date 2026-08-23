@@ -1,0 +1,17 @@
+subject_definitions:
+<Picture 1> is <Subject 1>.
+
+summary:
+A fight.
+
+retention_analysis:
+<Picture 1> fully_preserved. Frame zero: low wide master.
+
+detailed_description:
+MOUTH STATE: closed. HAND STATE: on the hilt. CAMERA LOCK: fixed. EYELINE RULE: matches. SCREEN DIRECTION: left. INJURY STATE: none yet. BLOOD STATE: clean. WEAPON RULE: one. LIGHT STATE: cold key. HAIR STATE: tied. [00:00.000] They fight.
+
+overall_soundscape:
+Steel.
+
+non_diegetic_music:
+None.

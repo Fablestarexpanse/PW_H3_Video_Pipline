@@ -1,0 +1,18 @@
+subject_definitions:
+<Picture 1> is the approved three-view turnaround of <Subject 1>, a woman in her mid-twenties with dark auburn hair. Take her face, build and wardrobe from it; NOT its white backdrop, NOT its framing, NOT its lighting.
+<Picture 2> is an empty sunroom; take its architecture, window light and floor; NOT its emptiness, NOT its camera position.
+
+summary:
+A 13-second single locked-off medium shot. <Subject 1> stands at the sunroom window, turns from the glass to the camera, and lifts a pendant to the lens. The camera is locked and does not move.
+
+retention_analysis:
+<Picture 1>: fully_preserved identity. <Picture 2>: architecture and light fully_preserved; added: <Subject 1> standing in it from the first frame. The first frame is already a medium shot of her at chest height, her back three-quarters to us, hands on the sill. The camera stays locked for the whole clip.
+
+detailed_description:
+Photoreal, soft window key, warm rim. [00:00.000] Medium shot, locked camera, 50mm: she stands at the window, hands on the sill. [00:04.000] She turns to face the lens, hands stay down at her sides. [00:09.000] She lifts the pendant until it fills the frame edge to edge like a gold coin held to the lens. Her arms stay down until then.
+
+overall_soundscape:
+Room tone, distant birds, the soft click of the pendant chain.
+
+non_diegetic_music:
+None.

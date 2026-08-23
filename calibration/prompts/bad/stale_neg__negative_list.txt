@@ -1,0 +1,17 @@
+subject_definitions:
+<Picture 1> is <Subject 1>.
+
+summary:
+He stands in the corridor. No urinals, no sinks, no mirrors, no tiles.
+
+retention_analysis:
+<Picture 1> fully_preserved. Frame zero: medium shot of him.
+
+detailed_description:
+[00:00.000] He stands.
+
+overall_soundscape:
+Hum.
+
+non_diegetic_music:
+None.

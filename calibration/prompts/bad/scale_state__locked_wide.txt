@@ -1,0 +1,17 @@
+subject_definitions:
+<Picture 1> is <Subject 1>.
+
+summary:
+He crosses the hall.
+
+retention_analysis:
+<Picture 1> fully_preserved. First frame: a medium shot of him at chest height.
+
+detailed_description:
+SCALE STATE: the trusses, the crowd receding past his shoulders, the vast ceiling, never by framing wide. [00:00.000] He walks.
+
+overall_soundscape:
+Crowd.
+
+non_diegetic_music:
+None.

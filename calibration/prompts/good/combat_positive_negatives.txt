@@ -1,0 +1,17 @@
+subject_definitions:
+<Picture 1> is <Subject 1>, the hero; exactly ONE weapon, a hand axe. <Picture 3> is the rubble yard at dawn; NOT its emptiness.
+
+summary:
+A 15-second grounded fight, three combatants, body-to-body hits with persistent damage, all accounted for in the final frame.
+
+retention_analysis:
+<Picture 1> fully_preserved; added: a cut over the left brow at 00:06.200 that stays in every frame after. Frame zero is a low wide master of the yard with all three already in it.
+
+detailed_description:
+Hard cold key from the east cutting the mist. [Shot 1 00:00.000] low wide master, 24mm. [Shot 2 00:02.500] OTS on the first attacker, hero takes a hit to the ribs. [Shot 3 00:05.000] tight low on the hero, the axe lands on the attacker's shoulder and stays there. The axe strikes bodies only; it lands on shoulder and forearm, and the rubble is untouched beneath them. Figures no taller in frame than the rubble heaped at their bases.
+
+overall_soundscape:
+Near silent between beats, hard transients on impact.
+
+non_diegetic_music:
+Low drone, cut to nothing for the last two shots.

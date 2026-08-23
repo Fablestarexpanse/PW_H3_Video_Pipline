@@ -1,0 +1,17 @@
+subject_definitions:
+<Picture 1> is <Subject 1>. <Picture 2> is the empty club interior; NOT its emptiness.
+
+summary:
+A 13-second clip of him at the bar.
+
+retention_analysis:
+<Picture 1> fully_preserved. <Picture 2> architecture fully_preserved, NOT its emptiness.
+
+detailed_description:
+[00:00.000] He leans on the bar. [00:06.000] He turns.
+
+overall_soundscape:
+Club.
+
+non_diegetic_music:
+None.

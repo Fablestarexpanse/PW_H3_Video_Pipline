@@ -1,0 +1,17 @@
+subject_definitions:
+<Picture 1> is <Subject 1>.
+
+summary:
+He takes her from behind. The contact itself is never shown.
+
+retention_analysis:
+<Picture 1> fully_preserved. Frame zero is a medium two-shot.
+
+detailed_description:
+[00:00.000] Medium shot. [00:05.000] He steps in behind her.
+
+overall_soundscape:
+Quiet.
+
+non_diegetic_music:
+None.
