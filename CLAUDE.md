@@ -18,6 +18,7 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - `python tools/preflight.py <slug> <unit|.> <file.lines>` — refuse a prompt before it costs a render (LAWS)
 - `python tools/render.py <slug> <unit|.> <job_id> [--dry-run|--proof|--requeue]` — queue a jobs.jsonl row
 - `python tools/landed.py <slug> [--watch]` — copy finished renders out, ffprobe, filmstrip, renders.jsonl
+- `python tools/refqc.py <png> --kind sheet|crop|plate [--figures N] [--block LO HI] [--record slug]` — G4 measurement
 - `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
 
 ## Founding rules (full list: spec §0)
@@ -29,6 +30,7 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 
 ## Working rules
 - Graphs are frozen (`workflows/`, four of them); jobs are data (`jobs.jsonl`). Never `save_workflow`.
+- Graphs are built/edited/inspected only via the `comfy-draftsman` MCP; jobs are queued only via `render.py` (local HTTP API).
 - `render.py` sets widgets and node modes only — never adds, removes or rewires a node.
 - Refuse, don't warn. No `except: pass`. Print what was measured.
 - Never delete a render: rename `*__rej_<reason>.*`.
