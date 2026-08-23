@@ -17,11 +17,17 @@ STYLE_STACK = ["<lora:ApricotPaper_Krea2_V1.0:0.8>"]   # G0 approved 2026-08-23:
 # One entry per recurring character. slot is the 0-based ref_image slot → <Picture slot+1>.
 # sheet paths are relative to the production folder and must be *_APPROVED_<seed>.png.
 CAST = {
+    "bram": {"sheet": "refs/bram_APPROVED_120001.png", "seed": 120001, "slot": 0},
+    "tansy": {"sheet": "refs/tansy_APPROVED_120004.png", "seed": 120004, "slot": 1},
+    "reed": {"sheet": "refs/reed_APPROVED_120007.png", "seed": 120007, "slot": 2},
     # "hero": {"sheet": "refs/hero_APPROVED_100003.png", "seed": 100003, "slot": 1},
 }
 
 # One entry per location template (an EMPTY room; conditioning only — LAWS §8).
 LOCATIONS = {
+    "gate": {"sheet": "refs/gate_APPROVED_120011.png", "seed": 120011, "slot": 3},
+    "kitchen": {"sheet": "refs/kitchen_APPROVED_120013.png", "seed": 120013, "slot": 4},
+    "hill": {"sheet": "refs/hill_APPROVED_120015.png", "seed": 120015, "slot": 5},
     # "kitchen": {"sheet": "refs/kitchen_APPROVED_100102.png", "seed": 100102, "slot": 0},
 }
 

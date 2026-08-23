@@ -194,6 +194,48 @@
     "pct_under_20": 1.436,
     "figures": 1
    }
+  },
+  {
+   "file": "bram_APPROVED_120001.png",
+   "seed": 120001,
+   "status": "approved",
+   "source_candidate": "bram_s120001__bram_00001_.png",
+   "slot": 0
+  },
+  {
+   "file": "tansy_APPROVED_120004.png",
+   "seed": 120004,
+   "status": "approved",
+   "source_candidate": "tansy_s120004__tansy_00001_.png",
+   "slot": 1
+  },
+  {
+   "file": "reed_APPROVED_120007.png",
+   "seed": 120007,
+   "status": "approved",
+   "source_candidate": "reed_s120007__reed_00001_.png",
+   "slot": 2
+  },
+  {
+   "file": "gate_APPROVED_120011.png",
+   "seed": 120011,
+   "status": "approved",
+   "source_candidate": "gate_s120011__gate_00002_.png",
+   "slot": 3
+  },
+  {
+   "file": "kitchen_APPROVED_120013.png",
+   "seed": 120013,
+   "status": "approved",
+   "source_candidate": "kitchen_s120013__kitchen_00002_.png",
+   "slot": 4
+  },
+  {
+   "file": "hill_APPROVED_120015.png",
+   "seed": 120015,
+   "status": "approved",
+   "source_candidate": "hill_s120015__hill_00002_.png",
+   "slot": 5
   }
  ]
 }
