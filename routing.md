@@ -58,7 +58,12 @@ int8 model — it is the one candidate under (a), pending a proof segment.
 - **Klein**: cannot carry Krea-2 LoRAs — look comes from the source image. Name only the change.
 - **H3**: negatives work only as positive statements of the mode (see `LAWS.md` §4). `<Picture N>`
   numbering follows slot index; unused slots are **bypassed** by `render.py` (proven: a bypassed
-  `LoadImage` vanishes from the API prompt and its slot is dropped from the H3 node).
+  `LoadImage` vanishes from the API prompt and its slot is dropped from the H3 node). **`ref_image_0`
+  (`<Picture 1>`) carries materially more compositional weight than the other 8 slots** — on
+  `mm_clip_v1`/`mm_chain_v1` it also sets the generation's width/height via GetImageSize. Put the
+  LOCATION there in any multi-reference clip, never a character: a character at slot 0 produced a
+  flat character-sheet lineup with the location ignored; moving the location to slot 0 with identical
+  prompt content produced the composited scene (apricot_paper, 2026-08-23).
 
 ## Retired / not routed
 Everything in ComfyUI `workflows/archive/` (95 graphs, moved 2026-08-22, not deleted). No
