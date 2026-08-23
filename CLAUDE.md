@@ -37,5 +37,4 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - No LoRAs by default; one is added only as a proven speed-up or workflow improvement (routing.md).
 - Refuse, don't warn. No `except: pass`. Print what was measured.
 - Never delete a render: rename `*__rej_<reason>.*`.
-- New finding the spec didn't predict → `findings.jsonl` with `count: 1`.
 - Media lives at `F:\MovieMaker\` (mirrors `productions/`), never in git. `tools/paths.py` owns the root.
