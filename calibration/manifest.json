@@ -1,1 +1,59 @@
-{"good": [], "bad": []}
+{
+ "media": "F:/MovieMaker/calibration (mirrors this file; never in git)",
+ "good": [
+  {
+   "file": "club09k_00001_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "note": "club09j re-rolled with a positive frame zero: leak +0.04"
+  },
+  {
+   "file": "club10v11b_00002_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "note": "club10v11 re-rolled: leak +0.19"
+  },
+  {
+   "file": "club12i_00001_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "note": "club12h re-rolled: leak -0.03"
+  },
+  {
+   "file": "club16v11_00001_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "note": "shipped as-is"
+  }
+ ],
+ "bad": [
+  {
+   "file": "club09j_00001_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "fault": "ref_leak",
+   "note": "opened on the plate, corr +0.97 (LAWS 1/8)"
+  },
+  {
+   "file": "club10v11_00001_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "fault": "ref_leak",
+   "note": "corr +0.95 at frame 0"
+  },
+  {
+   "file": "club12h_00001_.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "fault": "ref_leak",
+   "note": "corr +0.94 at frame 11"
+  },
+  {
+   "file": "club07d.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 362,
+   "fault": "blown",
+   "note": "one-frame white pop at frame 269 (lum 158)"
+  }
+ ]
+}

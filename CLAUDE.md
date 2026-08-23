@@ -19,6 +19,7 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - `python tools/render.py <slug> <unit|.> <job_id> [--dry-run|--proof|--requeue]` — queue a jobs.jsonl row
 - `python tools/landed.py <slug> [--watch]` — copy finished renders out, ffprobe, filmstrip, renders.jsonl
 - `python tools/refqc.py <png> --kind sheet|crop|plate [--figures N] [--block LO HI] [--record slug]` — G4 measurement
+- `python tools/clipqc.py <clip.mp4> [--ref plate.png] [--frames N] [--one-shot]` — post-landing QC
 - `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
 
 ## Founding rules (full list: spec §0)

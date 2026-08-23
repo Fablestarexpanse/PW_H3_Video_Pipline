@@ -8,7 +8,7 @@ retention_analysis:
 <Picture 1> fully_preserved. Frame zero: low wide master.
 
 detailed_description:
-MOUTH STATE: closed. HAND STATE: on the hilt. CAMERA LOCK: fixed. EYELINE RULE: matches. SCREEN DIRECTION: left. INJURY STATE: none yet. BLOOD STATE: clean. WEAPON RULE: one. LIGHT STATE: cold key. HAIR STATE: tied. [00:00.000] They fight.
+MOUTH STATE: closed. HAND STATE: on the hilt. CAMERA LOCK: fixed. EYELINE RULE: matches. SCREEN DIRECTION: left. INJURY STATE: none yet. BLOOD STATE: clean. WEAPON RULE: one. LIGHT STATE: cold key. HAIR STATE: tied. WORLD STATE: set. GRADE STATE: set. LIGHT STATE: set. CROWD STATE: set. FRAMING STATE: set. SHOT STATE: set. CUT STATE: set. STILLNESS STATE: set. ACTION STATE: set. CONTINUITY STATE: set. REACTION STATE: set. LOCATION STATE: set. CAMERA STATE: set. POSTURE STATE: set. EXPRESSION STATE: set. ROUTE STATE: set. DESCENT STATE: set. [00:00.000] They fight.
 
 overall_soundscape:
 Steel.

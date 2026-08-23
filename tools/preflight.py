@@ -43,7 +43,7 @@ NEG_WORD = re.compile(r"\b(no|never|without|not)\b", re.I)
 # A named rule block: "MOUTH STATE:", "CAMERA LOCK:", "WEAPON RULE:", "READ THIS FIRST:" — uppercase label + colon.
 BLOCK_RE = re.compile(r"\b([A-Z][A-Z-]+(?: [A-Z][A-Z-]+){0,4}(?: STATE| RULE| LOCK| WINDOW| BUDGET| FIRST| ONLY))\s*:")
 LOCK_RE = re.compile(r"\b(locked(?:-off)?|lock(?:ed)? (?:camera|off)|camera (?:is|stays|remains) (?:locked|static|fixed)|does not move|never moves)\b", re.I)
-DEFAULT_MAX_BLOCKS = 8
+DEFAULT_MAX_BLOCKS = 16   # the Ref2VA Clip Prompt Template defines 16 named STATE blocks (LAWS §10)
 FIXTURES = paths.REPO / "calibration" / "prompts"
 
 
