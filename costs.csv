@@ -1,1 +1,3 @@
-frames,res,regime,refs,minutes,date,production
+frames,res,regime,refs,minutes,date,production,graph,job
+124,1344x768,mm_clip_v1/20,1,4.98,2026-08-23,zz_proof,mm_clip_v1,b01_s900001
+1,1344x768,mm_edit_v1/4,0,18.88,2026-08-23,zz_proof,mm_edit_v1,edit_s900002

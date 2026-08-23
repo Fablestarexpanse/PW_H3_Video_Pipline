@@ -24,6 +24,13 @@
    "ref": "REF_Club_INTERIOR.png",
    "frames": 362,
    "note": "shipped as-is"
+  },
+  {
+   "file": "zzproof_club_dolly_124f.mp4",
+   "ref": "REF_Club_INTERIOR.png",
+   "frames": 124,
+   "one_shot": true,
+   "note": "first v2 clip via render.py/landed.py 2026-08-23: mm_clip_v1, 1344x768, 124 f, seed 900001, 4.98 min; leak +0.41"
   }
  ],
  "bad": [

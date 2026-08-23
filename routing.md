@@ -8,7 +8,7 @@ Everything that varies per job is a row in `jobs.jsonl`, never a saved graph (sp
 | Job | Graph | Model stack | Regime (frozen) | Variable inputs (and nothing else) |
 |---|---|---|---|---|
 | **Stills** — sheets, location templates, plates, look tests | `mm_image_v1` | Krea-2 int8 `myKrea2UnlockedInt8_v10` · `qwen3vl_4b_fp8_scaled` (type `krea2`) · `Qwen_Image-VAE` | 11 steps · cfg 1.0 · euler/simple · ConditioningZeroOut negative · NegPip via `Krea2PromptWeight` | `line` (index into `prompts/<unit>.lines`) · `negpip` line · `lora` inline string · `seed` · `width`/`height` · `prefix` |
-| **Edits** — change one thing on an existing render | `mm_edit_v1` | Flux-2 Klein **base** 9B fp8 · `qwen_3_8b_fp8mixed` (type `flux2`) · `full_encoder_small_decoder` | 4 steps · cfg 1.0 · euler · Flux2Scheduler · source as reference latent; output size = source size | `source` image · `prompt` (edit text) · `seed` · `prefix` |
+| **Edits** — change one thing on an existing render — **UNPROVEN, not routed** (see findings: base Klein at 4 steps reproduces the source unchanged) | `mm_edit_v1` | Flux-2 Klein **base** 9B fp8 · `qwen_3_8b_fp8mixed` (type `flux2`) · `full_encoder_small_decoder` | 4 steps · cfg 1.0 · euler · Flux2Scheduler · source as reference latent; output size = source size | `source` image · `prompt` (edit text) · `seed` · `prefix` |
 | **Clips** — any single H3 generation, 5–15 s | `mm_clip_v1` | H3 `minimax_h3_fl2va_pruned_int8_convrot` · `qwen3vl_32b_minimax_h3_nvfp4_awq` (type `minimax`) · video VAE fp16 · audio VAE fp32 | 20 steps · res_multistep/simple · size from `<Picture 1>` via GetImageSize | `line` · up to 9 `refs` (`ref_image_0..8`) · up to 3 `audio` (`ref_audio_0..2`) · `frames` (17k+5, set directly on `length`) · `seed` · `prefix` |
 | **Chain** — long-form ≥ 1 min, or any lip-synced performance to a real track | `mm_chain_v1` | H3 int8 as above but video VAE `minimax_h3_video_vae_int8_convrot` · SageAttention · SolAttn · SigmaShift 12/3 | 20 steps · euler/simple · 960×544 · context 22 · encode `video` · anchor `head` · `audio_mode: source_track` · crf 18 | `plan_json` · `run_name` · `fingerprint` · up to 9 `refs` · `cond_audio` (stem) · `mux_audio` (master) · `base_seed` |
 
@@ -35,10 +35,11 @@ Context 22 / anchor head: segment 1 delivers its full length, every later segmen
 | Graph | Job | Measured |
 |---|---|---|
 | Krea-2 | 1344×768, 8–11 steps, 3 LoRAs | ~75–90 s |
-| H3 clip | 124 f | 11.9 s/step → ~4 min sampling; cold load ~3.5 min |
+| H3 clip | 124 f | 11.9 s/step → ~4 min sampling; cold load ~3.5 min · **v2 measured 2026-08-23: 4.98 min wall at 1344×768, 1 ref (`costs.csv`)** |
 | H3 clip | 226 f | 31.8 s/step → ~10.6 min |
 | H3 clip | 362 f @ 1152×640 (WTTB) | 13–15 min wall |
 | Chain | 20-step, 362 f segments | **unmeasured** — measure on segment 1 before quoting |
+| Klein edit | 1344×768, base 9B, 4 steps | 18.9 min right after an H3 clip (VRAM contention suspected) — and it did not edit; unproven |
 
 ## Levers that work, per model
 - **Krea-2**: prompt negatives do nothing at cfg 1.0. NegPip `(word:-1.2…-1.5)` works, for standing
