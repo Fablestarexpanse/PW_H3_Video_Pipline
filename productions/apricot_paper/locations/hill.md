@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 name: hill
 ---
 # The abbey on the hill (wide)

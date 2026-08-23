@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 name: gate
 ---
 # The abbey gate

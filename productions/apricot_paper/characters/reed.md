@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 name: reed
 ---
 # Reed — the stranger at the gate
