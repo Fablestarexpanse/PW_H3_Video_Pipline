@@ -10,7 +10,8 @@ FORMAT = ""                     # "film" | "show"
 ASPECT = (0, 0)                 # (w, h) — measured from the master ref, never typed
 WORLD = ""                      # worlds/<slug> this production draws canon from, or ""
 
-# Locked at kickoff; [] = no LoRA. Inline <lora:name:w> strings; render.py applies them to every mm_image job.
+# Default is NO LoRA (routing.md, LoRA policy). Inline <lora:name:w> strings only when this production
+# has proven one; render.py applies them to every mm_image job.
 STYLE_STACK = []
 
 # One entry per recurring character. slot is the 0-based ref_image slot → <Picture slot+1>.

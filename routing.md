@@ -41,6 +41,14 @@ Context 22 / anchor head: segment 1 delivers its full length, every later segmen
 | Chain | 20-step, 362 f segments | **unmeasured** — measure on segment 1 before quoting |
 | Klein edit | 1344×768, base 9B, 4 steps | 18.9 min right after an H3 clip (VRAM contention suspected) — and it did not edit; unproven |
 
+## LoRA policy (Ronan, 2026-08-23)
+**Start with no LoRAs.** A LoRA is added only when it is (a) a speed-up — turbo / lightning / few-step
+distillation — or (b) a proven improvement to the workflow itself, each with its own proof render and a
+row in `costs.csv`. Character or style LoRAs are never a default; a production that wants one declares
+it in `identity.STYLE_STACK` and it rides on that production only. Current state: `mm_image_v1`,
+`mm_clip_v1`, `mm_edit_v1` carry no LoRA; `mm_chain_v1`'s turbo LoRA was dropped as unproven on the
+int8 model — it is the one candidate under (a), pending a proof segment.
+
 ## Levers that work, per model
 - **Krea-2**: prompt negatives do nothing at cfg 1.0. NegPip `(word:-1.2…-1.5)` works, for standing
   style-stack taxes only; don't push past −1.8 (backs go hollow). Width beats the word "three".

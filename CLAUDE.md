@@ -34,6 +34,7 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - Graphs are frozen (`workflows/`, four of them); jobs are data (`jobs.jsonl`). Never `save_workflow`.
 - Graphs are built/edited/inspected only via the `comfy-draftsman` MCP; jobs are queued only via `render.py` (local HTTP API).
 - `render.py` sets widgets and node modes only — never adds, removes or rewires a node.
+- No LoRAs by default; one is added only as a proven speed-up or workflow improvement (routing.md).
 - Refuse, don't warn. No `except: pass`. Print what was measured.
 - Never delete a render: rename `*__rej_<reason>.*`.
 - New finding the spec didn't predict → `findings.jsonl` with `count: 1`.
