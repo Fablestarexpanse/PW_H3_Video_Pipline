@@ -18,3 +18,8 @@ STATUS.md
 __pycache__/
 *.pyc
 .obsidian/workspace*.json
+
+# Productions are Ronan's creative work, not the shared tool -- stay local (repo is the build
+# tool; templates/production/ is the shared skeleton and stays tracked).
+productions/*
+!productions/.gitkeep
