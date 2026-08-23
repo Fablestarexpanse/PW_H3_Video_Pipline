@@ -46,28 +46,43 @@ def write(all_rows: list[dict]) -> None:
 def ingest(slug: str) -> int:
     prod = skeleton.PRODUCTIONS / slug
     existing = rows()
-    have = {(r["production"], r["job"]) for r in existing}
-    added = 0
+    by_job = {(r["production"], r["job"]): r for r in existing}
+    # A job id can be re-rendered (proof iteration, --requeue) leaving several renders.jsonl rows
+    # under the same id; keep the LATEST landed one, not the first (measured 2026-08-23: a stale
+    # first-attempt cost survived three re-renders because ingest only ever skipped-if-present).
+    latest: dict[str, dict] = {}
     for line in (prod / "renders.jsonl").read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         r = json.loads(line)
-        if r.get("status") != "landed" or not r.get("minutes") or (slug, r["job"]) in have:
+        if r.get("status") != "landed" or not r.get("minutes"):
             continue
+        if r["job"] not in latest or r["landed"] > latest[r["job"]]["landed"]:
+            latest[r["job"]] = r
+    added = updated = 0
+    for job, r in latest.items():
+        key = (slug, job)
         g = r["graph"]
         unit = prod if r.get("unit") is None else prod / r["unit"]
         refs = ""
         for jl in (unit / "jobs.jsonl").read_text(encoding="utf-8").splitlines():
-            if jl.strip() and json.loads(jl).get("id") == r["job"]:
+            if jl.strip() and json.loads(jl).get("id") == job:
                 refs = str(len(json.loads(jl).get("refs", {})))
-        existing.append({"frames": r.get("frames") or 1, "res": f"{r['width']}x{r['height']}",
-                         "regime": f"{g}/{STEPS.get(g, '?')}", "refs": refs, "minutes": r["minutes"],
-                         "date": r["landed"][:10], "production": slug, "graph": g, "job": r["job"]})
-        have.add((slug, r["job"]))
-        added += 1
-        print(f"added     {r['job']}: {r.get('frames')} f {r['width']}x{r['height']} {r['minutes']} min")
+        row = {"frames": r.get("frames") or 1, "res": f"{r['width']}x{r['height']}",
+               "regime": f"{g}/{STEPS.get(g, '?')}", "refs": refs, "minutes": r["minutes"],
+               "date": r["landed"][:10], "production": slug, "graph": g, "job": job}
+        if key in by_job:
+            if by_job[key] != row:
+                by_job[key].update(row)
+                updated += 1
+                print(f"updated   {job}: {r.get('frames')} f {r['width']}x{r['height']} {r['minutes']} min")
+        else:
+            existing.append(row)
+            by_job[key] = row
+            added += 1
+            print(f"added     {job}: {r.get('frames')} f {r['width']}x{r['height']} {r['minutes']} min")
     write(existing)
-    print(f"measured  {added} new row(s); costs.csv now {len(existing)}")
+    print(f"measured  {added} new row(s), {updated} updated; costs.csv now {len(existing)}")
     return 0
 
 
