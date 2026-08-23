@@ -12,6 +12,9 @@ Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `stat
 - `python tools/paths.py` — resolve host paths; creates `F:\MovieMaker` skeleton
 - `python tools/smoke.py` — every module imports (session start)
 - `python tools/drift.py` — no production diverges from the shared layer (pre-commit)
+- `python tools/new_production.py <slug> --format film|show --title T [--unit 'S01E01 - N']` — the only way a production is created
+- `python tools/contract.py <slug>|--all` — cross-file facts agree (G3/G4/preflight/build)
+- `python tools/migrate.py` — bring productions to `TEMPLATE_VERSION` after a template/tool change
 - `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
 
 ## Founding rules (full list: spec §0)

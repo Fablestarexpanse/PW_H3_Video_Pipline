@@ -1,0 +1,6 @@
+#!/bin/sh
+# Movie Maker v2 pre-commit: smoke + drift. Installed by `git config core.hooksPath hooks`.
+set -e
+cd "$(git rev-parse --show-toplevel)"
+python tools/smoke.py
+python tools/drift.py

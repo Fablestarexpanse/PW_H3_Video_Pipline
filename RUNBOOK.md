@@ -35,3 +35,8 @@ Written as facts are discovered, not at the end.
 - Approve: flip `status:` in a file and commit.
 - Install custom node packs (third-party code) — never done by the pipeline.
 - Un-mute the two amber recovery nodes in `mm_chain` and mute the main Assemble to rebuild from checkpoints.
+
+## Git hooks
+- Hooks are tracked in `hooks/` and enabled with `git config core.hooksPath hooks` (run once per clone; also
+  done by `/start`). `pre-commit` runs `tools/smoke.py` then `tools/drift.py` (which calls `deploy.py --check`,
+  so ComfyUI must be reachable — use `drift.py --no-comfy` manually if it is down, never skip the hook).
