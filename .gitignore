@@ -1,0 +1,20 @@
+# Media never enters git (spec §5) — except approved refs.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+*.mov
+*.mkv
+*.wav
+*.mp3
+*.flac
+*.safetensors
+!**/refs/*_APPROVED_*.png
+!workflows/null_ref.png
+
+# Generated / local
+STATUS.md
+__pycache__/
+*.pyc
+.obsidian/workspace*.json

@@ -1,0 +1,30 @@
+# Movie Maker v2
+
+Local-only short-film / episodic video pipeline: ComfyUI (Krea-2 stills, Flux-2 Klein edits,
+MiniMax H3 motion + audio) driven headless via the `comfy-draftsman` MCP. Contract: `moviemaker-v2-SPEC.md`.
+Model behaviour: `LAWS.md` (read once per session). Host facts: `RUNBOOK.md`. Job routing: `routing.md`.
+
+## Stages
+DEVELOP → BRIEF → CANON → AUDIO → BEATS → REFS → PROMPTS → PROOF → BOARD → CUT → POSTMORTEM
+Each gate is a script in `tools/` with an exit code. Approval = Ronan sets `status: approved` and commits.
+
+## Commands
+- `python tools/paths.py` — resolve host paths; creates `F:\MovieMaker` skeleton
+- `python tools/smoke.py` — every module imports (session start)
+- `python tools/drift.py` — no production diverges from the shared layer (pre-commit)
+- `python tools/<check>.py --selftest` — calibrate a check against `calibration/`
+
+## Founding rules (full list: spec §0)
+1. A check that does not measure the delivered artifact is not a check. No prose gates.
+2. Cheap before expensive: words → stills → one proof clip → board → cut. Gate before each.
+3. One fact, one file, cross-checked — `contract.py` refuses when two files disagree.
+11. Productions own only `identity.py` + content. Tools, checks, templates, laws are shared above
+    `productions/`. `drift.py` refuses any production that diverges.
+
+## Working rules
+- Graphs are frozen (`workflows/`, four of them); jobs are data (`jobs.jsonl`). Never `save_workflow`.
+- `render.py` sets widgets and node modes only — never adds, removes or rewires a node.
+- Refuse, don't warn. No `except: pass`. Print what was measured.
+- Never delete a render: rename `*__rej_<reason>.*`.
+- New finding the spec didn't predict → `findings.jsonl` with `count: 1`.
+- Media lives at `F:\MovieMaker\` (mirrors `productions/`), never in git. `tools/paths.py` owns the root.
