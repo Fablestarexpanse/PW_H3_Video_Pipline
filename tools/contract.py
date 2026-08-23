@@ -10,7 +10,7 @@ Facts checked
   WORKFLOWS values are graphs named in routing.md
   every CAST/LOCATIONS sheet exists, is *_APPROVED_<seed>.png with the SAME seed, and is in refs/manifest.json
   no two CAST/LOCATIONS entries share a slot
-  beats.csv: frames on 17k+5 · every ref key in CAST ∪ LOCATIONS · cut_time monotonic
+  beats.csv: frames on 17k+5 · every ref key is a canon file (characters/ or locations/) or an identity key · cut_time monotonic
   slot_names.txt line count == beats.csv row count
   prompts/<unit>.lines: line count == beat count · every <Picture N> ⊆ declared slots+1 ·
                         any line with (S<n>) carries a VOICES phrase byte-identical
@@ -108,7 +108,10 @@ class Contract:
                 if p.name not in manifest_files:
                     self.fail(f"{kind}[{key!r}].sheet {p.name} not in refs/manifest.json")
         self.ok(f"{len(slots)} reference slot(s): " + ", ".join(f"<Picture {s+1}>={k}" for s, k in sorted(slots.items())))
-        ref_keys = set(ident.CAST) | set(ident.LOCATIONS)
+        # G3: a beat ref is a CANON key (characters/<key>.md or locations/<key>.md). The approved sheet
+        # behind it is G4's business (identity CAST/LOCATIONS; preflight/render refuse an unapproved <Picture N>).
+        ref_keys = {p.stem for d in ("characters", "locations") for p in (prod / d).glob("*.md") if p.name != "_TEMPLATE.md"}
+        ref_keys |= set(ident.CAST) | set(ident.LOCATIONS)
         declared_pics = {s + 1 for s in slots}
 
         for unit in skeleton.units(prod, ident.FORMAT if ident.FORMAT in ("film", "show") else "film"):
@@ -142,7 +145,7 @@ class Contract:
             total += fr
             for r in filter(None, (x.strip() for x in b["refs"].split(";"))):
                 if r not in ref_keys:
-                    self.fail(f"{name} beat {b['beat']!r}: ref {r!r} not in identity CAST/LOCATIONS")
+                    self.fail(f"{name} beat {b['beat']!r}: ref {r!r} is not a canon key (characters/ or locations/) or identity key")
             if b["cut_time"].strip():
                 ct = float(b["cut_time"])
                 if ct <= last_cut:

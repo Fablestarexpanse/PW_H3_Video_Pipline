@@ -1,1 +1,8 @@
 beat,frames,mode,refs,state_changes,cut_time
+b01,311,ref2va,hill,,0.000
+b02,311,ref2va,gate;bram,,12.958
+b03,311,ref2va,gate;bram;reed,reed arrives,25.917
+b04,311,ref2va,kitchen;tansy,,38.875
+b05,311,ref2va,gate;bram;tansy;reed,bread in frame,51.833
+b06,311,ref2va,gate;bram;reed,door opens,64.792
+b07,362,ref2va,hill,one more window lit,77.750
