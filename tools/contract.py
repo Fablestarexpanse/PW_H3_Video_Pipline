@@ -176,6 +176,38 @@ class Contract:
                     self.fail(f"{name}/prompts/{lf.name} line {i}: has a speaker tag but no byte-identical VOICES phrase")
             self.ok(f"{name}/prompts/{lf.name}: {len(lines)} line(s) checked")
 
+        self.check_landed_files(unit, name)
+
+    def check_landed_files(self, unit: Path, name: str) -> None:
+        # jobs.jsonl says a job "landed" and names its output files; assemble.py trusts that name
+        # blindly. A copy-vs-record mismatch here is invisible until someone runs assemble.py on
+        # the finished board (measured 2026-08-23: landed.py recorded the pre-copy filename while
+        # every actual file on disk carried a "<job_id>__" prefix — every beat silently pointed at
+        # a file that never existed). Check it the moment a job lands, not at the end of the board.
+        jobs_path = unit / "jobs.jsonl"
+        if not jobs_path.is_file():
+            return
+        slug = self.prod.name
+        unit_name = unit.name if unit != self.prod else None
+        candidates = [
+            paths.media_for(slug, *([unit_name] if unit_name else []), "clips"),
+            paths.media_for(slug, "refs", "candidates"),
+        ]
+        checked = missing = 0
+        for line in jobs_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if row.get("status") != "landed":
+                continue
+            for fname in row.get("landed_files") or []:
+                checked += 1
+                if not any((d / fname).is_file() for d in candidates):
+                    missing += 1
+                    self.fail(f"{name}/jobs.jsonl {row['id']}: landed_files entry {fname!r} not found in clips/ or refs/candidates/")
+        if checked and not missing:
+            self.ok(f"{name}/jobs.jsonl: {checked} landed_files entr{'y' if checked == 1 else 'ies'} all present on disk")
+
     def check_audio(self, audio: dict) -> None:
         master = self.prod / audio.get("master", "")
         if not master.is_file():
