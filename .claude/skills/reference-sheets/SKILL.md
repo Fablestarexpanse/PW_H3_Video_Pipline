@@ -41,15 +41,19 @@ clip as `<Picture N>`. One approved sheet per asset, then stop.
 hair colour and style · eyes · distinguishing marks and jewellery · wardrobe colours/materials/
 condition; one or two cues per trait, never three):
 
-> A character turnaround reference sheet, exactly three full-body drawings of the same single man
-> and no other figures, arranged in one centered horizontal row with clear gaps between them, front
-> view then side view then back view, wide empty white margins on the left and right edges with no
-> partial figures touching any edge of the image. Seamless plain white studio backdrop fills the
-> entire background, flat even neutral studio lighting, no shadows, no coloured light. All three
-> figures are exactly the same height and build, standing upright in a neutral relaxed pose, drawn
-> small enough that each complete body fits inside the frame with empty space above every head and
-> a clear strip of perfectly clean bare white floor below every pair of feet, the ground completely
-> empty and spotless, feet fully visible and never touching the bottom edge, nothing cropped.
+> A character turnaround reference sheet populated by exactly one figure, the same single man,
+> repeated in three full-body drawings arranged in one centered horizontal row with clear gaps
+> between them: front view, then side view, then back view. Each figure sits entirely within its
+> own margin, wholly clear of every edge of the image. A seamless plain white studio backdrop
+> fills the entire background in a flat, even, colour-neutral wash of light, uniform and
+> shadowless across the whole sheet. All three figures are exactly the same height and build,
+> standing upright in a neutral relaxed pose, drawn small enough that each complete body fits
+> inside the frame with empty space above every head and a clear strip of perfectly clean bare
+> white floor below every pair of feet; feet are fully visible, resting well above the bottom edge.
+
+(Rewritten 2026-08-23 — LAWS §1/§4: the original phrased "no other figures", "no partial figures
+touching any edge" and "no shadows, no coloured light" as negatives and failed preflight's
+stale_neg check the first time it was used end to end. Same content, stated positively.)
 
 **Prop turnaround:** same shape, "exactly three drawings of the same single object and nothing
 else … floating on clean white with no surface". Then size relative to a hand, materials, colours,
