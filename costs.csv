@@ -1,3 +1,8 @@
 frames,res,regime,refs,minutes,date,production,graph,job
 124,1344x768,mm_clip_v1/20,1,4.98,2026-08-23,zz_proof,mm_clip_v1,b01_s900001
 1,1344x768,mm_edit_v1/4,0,18.88,2026-08-23,zz_proof,mm_edit_v1,edit_s900002
+1,1344x768,mm_image_v1/11,0,0.22,2026-08-23,apricot_paper,mm_image_v1,look01_s110001
+1,1344x768,mm_image_v1/11,0,0.09,2026-08-23,apricot_paper,mm_image_v1,look02_s110002
+1,1344x768,mm_image_v1/11,0,0.09,2026-08-23,apricot_paper,mm_image_v1,look03_s110003
+1,1344x768,mm_image_v1/11,0,0.09,2026-08-23,apricot_paper,mm_image_v1,look04_s110004
+1,1344x768,mm_image_v1/11,0,0.13,2026-08-23,apricot_paper,mm_image_v1,look05_s110005
