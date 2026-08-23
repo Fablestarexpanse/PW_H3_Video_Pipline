@@ -3,6 +3,7 @@
 Local-only short-film / episodic video pipeline: ComfyUI (Krea-2 stills, Flux-2 Klein edits,
 MiniMax H3 motion + audio) driven headless via the `comfy-draftsman` MCP. Contract: `moviemaker-v2-SPEC.md`.
 Model behaviour: `LAWS.md` (read once per session). Host facts: `RUNBOOK.md`. Job routing: `routing.md`.
+Prompt shape: `templates/clip_prompt_template.md`; reels: `templates/formats/reel.md`; skills: `.claude/skills/`.
 
 ## Stages
 DEVELOP → BRIEF → CANON → AUDIO → BEATS → REFS → PROMPTS → PROOF → BOARD → CUT → POSTMORTEM
