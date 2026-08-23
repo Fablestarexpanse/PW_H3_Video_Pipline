@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 ---
 # Apricot Paper Story — Brief
 
