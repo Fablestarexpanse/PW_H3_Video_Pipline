@@ -18,7 +18,7 @@ clip as `<Picture N>`. One approved sheet per asset, then stop.
    `landed.py`; candidates arrive in `F:\MovieMaker\<slug>\refs\candidates\`.
 3. Measure every candidate and record it:
    `python tools/refqc.py <png> --kind sheet --figures 3 --record <slug>` ·
-   `--kind plate [--block LO HI]` · `--kind crop`. Present the PNGs with their numbers **and stop**.
+   `--kind plate [--block LO HI]` (photoreal) · `--kind plate-illustrated` (ink/watercolour/paper-grain style: waives the white limit — rain streaks, candle glow and paper grain legitimately run high) · `--kind crop`. Present the PNGs with their numbers **and stop**.
    Never queue a clip "while Ronan looks".
 4. Ronan picks or rejects the set ("neither, go X" is expected). On a pick: copy to
    `productions/<slug>/refs/<key>_APPROVED_<seed>.png` (committed), set the manifest row to

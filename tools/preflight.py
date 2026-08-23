@@ -149,8 +149,11 @@ def check_prompt(text: str, label: str, approved_pics: set[int] | None, max_bloc
 
 
 def beat_modes(lf: Path) -> list[str]:
-    """mode per beat from the unit's beats.csv (same order as the lines); [] when absent."""
+    """mode per beat from the unit's beats.csv (same order as the lines); [] when absent.
+    refs.lines/looktest.lines are per-asset, not per-beat — no modes apply."""
     import csv
+    if lf.name in ("refs.lines", "looktest.lines"):
+        return []
     b = lf.parent.parent / "beats.csv"
     if not b.is_file():
         return []

@@ -1,6 +1,6 @@
 """refqc.py — measure a reference image before it is allowed to teach a clip (G4; LAWS §8).
 
-  python tools/refqc.py <image> --kind sheet|crop|plate [--figures N] [--block LO HI] [--record <slug>]
+  python tools/refqc.py <image> --kind sheet|crop|plate|plate-illustrated [--figures N] [--block LO HI] [--record <slug>]
   python tools/refqc.py --selftest
 
 Measures: mean luminance (0-255) · median · % pixels > 235 · % pixels < 20 · figure count by
@@ -9,9 +9,12 @@ KNOWN FAILURE of the figure count: views that overlap horizontally (loose hair s
 on a 768-wide portrait sheet) read as ONE run. Counted 3/3 on every landscape 1344-wide sheet
 measured (four characters across two productions) and on one portrait sheet. When it reads 1 on a sheet
 that plainly shows three views, omit --figures and count by eye; do not lower the threshold.
-Refuses (exit 1) when: % > 235 >= 1.5 for crops and plates (LAWS §8: a 26 % near-white macro
-cut clips to a white void; a turnaround SHEET is on white by design, so --kind sheet waives
-this and relies on --figures) · --figures given and the count differs · --block given and the mean is outside
+Refuses (exit 1) when: % > 235 >= 1.5 for crops and photoreal plates (LAWS §8: a 26 % near-white
+macro cut clips to a white void; a turnaround SHEET is on white by design, so --kind sheet waives
+this and relies on --figures; an ILLUSTRATED plate — ink/watercolour/paper-grain, rain streaks,
+candle-glow highlights — legitimately runs 2-15 % white as the medium, not a blown-highlight
+precursor, so --kind plate-illustrated waives it too, measured on apricot_paper 2026-08-23)
+· --figures given and the count differs · --block given and the mean is outside
 [LO, HI] (a work-lit plate at 89 against a film at 40-60 came back at 89).
 --record <slug> writes the measurements into productions/<slug>/refs/manifest.json for that
 file (status stays whatever Ronan set; refqc never approves).
@@ -79,9 +82,9 @@ def verdict(m: dict, figures: int | None, block: tuple[float, float] | None, kin
     """kind: sheet (white-backdrop turnaround — white limit waived, figures must match) |
              crop (face/grill tight crop — white limit applies) | plate (location — white + block apply)."""
     faults = []
-    if kind != "sheet" and m["pct_over_235"] >= WHITE_LIMIT:
+    if kind not in ("sheet", "plate-illustrated") and m["pct_over_235"] >= WHITE_LIMIT:
         faults.append(f"{m['pct_over_235']} % of pixels > 235 (limit {WHITE_LIMIT}) — crop tighter or re-render; this teaches a white void")
-    if kind != "plate" and figures is not None and m["figures"] != figures:   # gap scan is meaningless on a textured plate
+    if kind not in ("plate", "plate-illustrated") and figures is not None and m["figures"] != figures:   # gap scan is meaningless on a textured plate
         faults.append(f"figure count {m['figures']} != requested {figures} (runs {m['figure_runs']})")
     if block and not (block[0] <= m["mean"] <= block[1]):
         faults.append(f"mean luminance {m['mean']} outside the block it feeds [{block[0]}, {block[1]}]")
@@ -161,7 +164,7 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--figures", type=int)
     ap.add_argument("--block", type=float, nargs=2)
     ap.add_argument("--record")
-    ap.add_argument("--kind", choices=("sheet", "crop", "plate"), default="crop")
+    ap.add_argument("--kind", choices=("sheet", "crop", "plate", "plate-illustrated"), default="crop")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args(argv)
     if a.selftest:

@@ -160,11 +160,12 @@ class Contract:
             self.ok(f"{name}: slot_names.txt count {len(slot_lines)} == beat count")
 
         voices = list(ident.VOICES.values())
+        ASSET_FILES = {"refs.lines", "looktest.lines"}  # per-asset, not per-beat
         for lf in sorted((unit / "prompts").glob("*.lines")):
             lines = lf.read_text(encoding="utf-8").split("\n")
             if lines and lines[-1] == "":
                 lines = lines[:-1]
-            if beats and len(lines) != len(beats):
+            if beats and lf.name not in ASSET_FILES and len(lines) != len(beats):
                 self.fail(f"{name}/prompts/{lf.name}: {len(lines)} line(s) != {len(beats)} beat(s)")
             for i, line in enumerate(lines):
                 pics = {int(n) for n in PIC_RE.findall(line)}
