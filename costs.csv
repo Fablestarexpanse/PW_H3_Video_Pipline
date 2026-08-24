@@ -101,3 +101,5 @@ frames,res,regime,refs,minutes,date,production,graph,job
 1,1920x1096,mm_image_v1/11,0,0.52,2026-08-24,goose,mm_image_v1,mc_s130018
 1,1920x1096,mm_image_v1/11,0,0.2,2026-08-24,goose,mm_image_v1,mc_s130019
 209,960x544,mm_chain_v1/20,2,4.0,2026-08-24,goose,mm_chain_v1,chainproof_s140002
+209,960x544,mm_chain_v1/20,2,8.36,2026-08-24,goose,mm_chain_v1,chainproof_s140003
+175,960x544,mm_chain_v1/20,2,11.54,2026-08-24,goose,mm_chain_v1,chainproof_s140004

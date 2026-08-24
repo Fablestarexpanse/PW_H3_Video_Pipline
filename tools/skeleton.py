@@ -82,9 +82,10 @@ def allowed(prod: Path, fmt: str, rel: Path) -> bool:
         return len(parts) == 2 and (parts[1] == "manifest.json" or bool(APPROVED_RE.match(parts[1])))
     if head == "audio":
         # an external track a production draws on (identity.AUDIO master/stem, plus any extra
-        # stems the production keeps for its own reference, e.g. an instrumental-only mix). Never
-        # in git (paths.py/media convention); the folder itself is production-owned content.
-        return len(parts) == 2 and bool(AUDIO_RE.match(parts[1]))
+        # stems/trimmed slices the production keeps for its own reference, e.g. an instrumental-only
+        # mix or a per-shot cond_audio slice) plus its own whisper transcript.json (measured word-
+        # level timing, kept beside the audio it describes for lip-sync prompt-writing).
+        return len(parts) == 2 and (parts[1] == "transcript.json" or bool(AUDIO_RE.match(parts[1])))
     if head == "__pycache__":
         return True  # gitignored; never committed
     if fmt == "film" and head == "prompts":

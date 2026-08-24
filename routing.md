@@ -13,6 +13,18 @@ Everything that varies per job is a row in `jobs.jsonl`, never a saved graph (sp
 | **Chain** — long-form ≥ 1 min, or any lip-synced performance to a real track | `mm_chain_v1` | H3 int8 as above but video VAE `minimax_h3_video_vae_int8_convrot` · SageAttention · SolAttn · SigmaShift 12/3 | 20 steps · euler/simple · 960×544 · context 22 · encode `video` · anchor `head` · `audio_mode: source_track` · crf 18 | `plan_json` · `run_name` · `fingerprint` · up to 9 `refs` · `cond_audio` (stem) · `mux_audio` (master) · `base_seed` |
 | **Board clips** — a beat pinned between two approved storyboard stills (continuity by construction; the storyboard path) | `mm_ifl_v1` | H3 FL2VA int8 · encoder · VAEs identical to `mm_clip_v1` | 20 steps · res_multistep/simple · size from the FIRST frame via GetImageSize · `MiniMaxH3ImageToVideo` first_frame + last_frame, no reference slots | `line` · `first` (board still N, `*_APPROVED_*`) · `last` (board still N+1, `*_APPROVED_*`) · `frames` (17k+5) · `seed` · `prefix` |
 
+## Lip-sync (mm_chain_v1, audio_mode: source_track)
+Before writing any `<d>[English]...</d>` dialogue for a chain job, transcribe the actual cond_audio
+slice with whisper (word_timestamps=True) and quote what it measured at that timestamp — never the
+written lyric sheet's assumed line order. First real chain test (goose, 2026-08-24): two attempts
+with correctly-formatted `<d>` tags still failed because the audio window (0-8.7s, taken naively as
+"the opening line") was pure ad-lib vocalization; the real first lyric line didn't start until
+9.82s. No tag-format fix could have worked — the model was conditioned on audio that didn't contain
+the quoted words at all. `openai-whisper` is installed but only importable from
+`C:/Program Files/Python311/python.exe` (the default `python3` on PATH is 3.12 and lacks it). Trim
+cond_audio to the exact measured window with `ffmpeg atrim`, one slice per chain job — don't assume
+a shot starting at t=0 of the full track covers the intended line.
+
 ## The storyboard path (mm_ifl_v1)
 Why: with `mm_clip_v1` every beat renders independently from the same plates and sheets, tied to its
 neighbours only by prose ("exactly as the previous shot left them") — measured on last_light
