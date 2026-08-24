@@ -34,7 +34,7 @@ import skeleton  # noqa: E402
 
 PIC_RE = re.compile(r"<Picture (\d+)>")
 SPK_RE = re.compile(r"\(S\d\)")
-GRAPH_RE = re.compile(r"`(mm_(?:image|edit|clip|chain)_v\d+)`")
+GRAPH_RE = re.compile(r"`(mm_(?:image|edit|clip|chain|ifl)_v\d+)`")
 
 
 def routed_graphs() -> set[str]:
@@ -160,7 +160,7 @@ class Contract:
             self.ok(f"{name}: slot_names.txt count {len(slot_lines)} == beat count")
 
         voices = list(ident.VOICES.values())
-        ASSET_FILES = {"refs.lines", "looktest.lines"}  # per-asset, not per-beat
+        ASSET_FILES = {"refs.lines", "looktest.lines", "board.lines"}  # per-asset/boundary, not per-beat
         for lf in sorted((unit / "prompts").glob("*.lines")):
             lines = lf.read_text(encoding="utf-8").split("\n")
             if lines and lines[-1] == "":

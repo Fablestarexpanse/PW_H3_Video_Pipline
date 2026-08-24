@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 import paths  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-GRAPH_RE = re.compile(r"^mm_(image|edit|clip|chain)_v\d+\.json$")
+GRAPH_RE = re.compile(r"^mm_(image|edit|clip|chain|ifl)_v\d+\.json$")
 ASSETS = ("null_ref.png", "null_ref.wav")
 
 

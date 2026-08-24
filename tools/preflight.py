@@ -152,7 +152,7 @@ def beat_modes(lf: Path) -> list[str]:
     """mode per beat from the unit's beats.csv (same order as the lines); [] when absent.
     refs.lines/looktest.lines are per-asset, not per-beat — no modes apply."""
     import csv
-    if lf.name in ("refs.lines", "looktest.lines"):
+    if lf.name in ("refs.lines", "looktest.lines", "board.lines"):
         return []
     b = lf.parent.parent / "beats.csv"
     if not b.is_file():

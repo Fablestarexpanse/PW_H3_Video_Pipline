@@ -58,8 +58,9 @@ GRAPHS = {
         "h3": "110", "plan": "1700", "cond_audio": "1926", "mux_audio": "940",
         "refs": {0: "911", 1: "1927", 2: "1928", 3: "1929", 4: "1930", 5: "1931", 6: "1932", 7: "1933", 8: "1934"},
     },
+    "mm_ifl_v1": {"h3": "171", "lines": "156", "seed": "129", "prefix": "92", "first": "137", "last": "172"},
 }
-GRAPH_RE = re.compile(r"`(mm_(?:image|edit|clip|chain)_v\d+)`")
+GRAPH_RE = re.compile(r"`(mm_(?:image|edit|clip|chain|ifl)_v\d+)`")
 
 
 class Refuse(Exception):
@@ -146,6 +147,32 @@ def build(prod: Path, unit: Path, row: dict, proof: bool) -> dict:
             api[g["audio"][slot]]["inputs"]["audio"] = stage_input(prod, rel, proof, "audio")
         drop_slot(api, g, "h3", g["refs"], "ref_images.ref_image", set(refs))
         drop_slot(api, g, "h3", g["audio"], "ref_audios.ref_audio", set(audio))
+        api[g["lines"]]["inputs"]["file_path"] = str(lf)
+        api[g["lines"]]["inputs"]["index"] = int(row["line"])
+        api[g["h3"]]["inputs"]["length"] = frames
+        api[g["seed"]]["inputs"]["noise_seed"] = seed
+        api[g["prefix"]]["inputs"]["filename_prefix"] = prefix
+
+    elif graph.startswith("mm_ifl"):
+        # First/last-frame pinned clip: opens ON board still N, lands ON board still N+1
+        # (MiniMaxH3ImageToVideo). Continuity between beats is by construction — identity comes from
+        # the two approved stills; the graph has no reference slots, so the prompt carries no
+        # <Picture N> tags (an empty approved set below refuses any that sneak in).
+        seed, frames = row.get("seed"), row.get("frames")
+        if not isinstance(seed, int) or seed < 0:
+            raise Refuse(f"seed {seed!r} must be a non-negative int (never randomize)")
+        if not isinstance(frames, int) or frames < 5 or (frames - 5) % 17:
+            raise Refuse(f"frames {frames!r} not on the 17k+5 grid")
+        lf = unit / "prompts" / row["lines"]
+        if not lf.is_file():
+            raise Refuse(f"line file {lf} missing")
+        rc = preflight.check_line_file(lf, None if proof else set(), preflight.DEFAULT_MAX_BLOCKS, row["line"])
+        if rc:
+            raise Refuse(f"preflight refused {lf.name}[{row['line']}]")
+        if not row.get("first") or not row.get("last"):
+            raise Refuse("mm_ifl needs both 'first' and 'last' board stills")
+        api[g["first"]]["inputs"]["image"] = stage_input(prod, row["first"], proof, "ref")
+        api[g["last"]]["inputs"]["image"] = stage_input(prod, row["last"], proof, "ref")
         api[g["lines"]]["inputs"]["file_path"] = str(lf)
         api[g["lines"]]["inputs"]["index"] = int(row["line"])
         api[g["h3"]]["inputs"]["length"] = frames
