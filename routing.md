@@ -9,7 +9,7 @@ Everything that varies per job is a row in `jobs.jsonl`, never a saved graph (sp
 |---|---|---|---|---|
 | **Stills** — sheets, location templates, plates, look tests | `mm_image_v1` | Krea-2 int8 `myKrea2UnlockedInt8_v10` · `qwen3vl_4b_fp8_scaled` (type `krea2`) · `Qwen_Image-VAE` | 11 steps · cfg 1.0 · euler/simple · ConditioningZeroOut negative · NegPip via `Krea2PromptWeight` | `line` (index into `prompts/<unit>.lines`) · `negpip` line · `lora` inline string · `seed` · `width`/`height` · `prefix` |
 | **Edits** — change one thing on an existing render — **UNPROVEN, not routed** (see findings: base Klein at 4 steps reproduces the source unchanged) | `mm_edit_v1` | Flux-2 Klein **base** 9B fp8 · `qwen_3_8b_fp8mixed` (type `flux2`) · `full_encoder_small_decoder` | 4 steps · cfg 1.0 · euler · Flux2Scheduler · source as reference latent; output size = source size | `source` image · `prompt` (edit text) · `seed` · `prefix` |
-| **Clips** — any single H3 generation, 5–15 s | `mm_clip_v1` | H3 `minimax_h3_fl2va_pruned_int8_convrot` · `qwen3vl_32b_minimax_h3_nvfp4_awq` (type `minimax`) · video VAE fp16 · audio VAE fp32 | 20 steps · res_multistep/simple · size from `<Picture 1>` via GetImageSize | `line` · up to 9 `refs` (`ref_image_0..8`) · up to 3 `audio` (`ref_audio_0..2`) · `frames` (17k+5, set directly on `length`) · `seed` · `prefix` |
+| **Clips** — any single H3 generation, 5–15 s | `mm_clip_v1` | H3 `minimax_h3_fl2va_pruned_int8_convrot` · `qwen3vl_32b_minimax_h3_nvfp4_awq` (type `minimax`) · video VAE fp16 · audio VAE fp32 | 20 steps · res_multistep/simple · fixed 1184×672 (explicit widget, independent of any ref's own resolution) | `line` · up to 9 `refs` (`ref_image_0..8`) · up to 3 `audio` (`ref_audio_0..2`) · `frames` (17k+5, set directly on `length`) · `seed` · `prefix` |
 | **Chain** — long-form ≥ 1 min, or any lip-synced performance to a real track | `mm_chain_v1` | H3 int8 as above but video VAE `minimax_h3_video_vae_int8_convrot` · SageAttention · SolAttn · SigmaShift 12/3 | 20 steps · euler/simple · 960×544 · context 22 · encode `video` · anchor `head` · `audio_mode: source_track` · crf 18 | `plan_json` · `run_name` · `fingerprint` · up to 9 `refs` · `cond_audio` (stem) · `mux_audio` (master) · `base_seed` |
 | **Board clips** — a beat pinned between two approved storyboard stills (continuity by construction; the storyboard path) | `mm_ifl_v1` | H3 FL2VA int8 · encoder · VAEs identical to `mm_clip_v1` | 20 steps · res_multistep/simple · size from the FIRST frame via GetImageSize · `MiniMaxH3ImageToVideo` first_frame + last_frame, no reference slots | `line` · `first` (board still N, `*_APPROVED_*`) · `last` (board still N+1, `*_APPROVED_*`) · `frames` (17k+5) · `seed` · `prefix` |
 
@@ -45,7 +45,7 @@ single clip minute is spent.
 ## Sizes
 - Anything bound for H3: **1344×768** (H3-native; a sheet prompt saying "exactly three" holds here and not at 3264×1836).
 - Krea-2 storyboard 3:2: 1216×832 · portrait 832×1216 · square/identity 1024×1024.
-- Clip size is never typed: `mm_clip` reads it from `<Picture 1>`. Chain size is a Plan widget (multiples of 32).
+- `mm_clip_v1` is fixed 1184×672 (explicit widget on the H3 node, not derived from any ref — refs are conditioning only, fixed 2026-08-24). `mm_chain_v1` is fixed 960×544. `mm_ifl_v1` is the one graph that still derives size via GetImageSize — from the FIRST board still, which is correct there since board stills are literal pinned frames, not conditioning refs.
 
 ## H3 frame grid (24 fps, 17k+5)
 | Frames | 124 | 175 | 226 | 260 | 277 | **294** | **311** | **328** | **345** | **362** |
@@ -89,8 +89,7 @@ int8 model — it is the one candidate under (a), pending a proof segment.
 - **H3**: negatives work only as positive statements of the mode (see `LAWS.md` §4). `<Picture N>`
   numbering follows slot index; unused slots are **bypassed** by `render.py` (proven: a bypassed
   `LoadImage` vanishes from the API prompt and its slot is dropped from the H3 node). **`ref_image_0`
-  (`<Picture 1>`) carries materially more compositional weight than the other 8 slots** — on
-  `mm_clip_v1`/`mm_chain_v1` it also sets the generation's width/height via GetImageSize. Put the
+  (`<Picture 1>`) carries materially more compositional weight than the other 8 slots** — put the
   LOCATION there in any multi-reference clip, never a character: a character at slot 0 produced a
   flat character-sheet lineup with the location ignored; moving the location to slot 0 with identical
   prompt content produced the composited scene (apricot_paper, 2026-08-23).

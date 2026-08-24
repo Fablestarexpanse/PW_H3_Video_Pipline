@@ -139,7 +139,7 @@ def build(prod: Path, unit: Path, row: dict, proof: bool) -> dict:
             raise Refuse(f"preflight refused {lf.name}[{row['line']}]")
         refs = {int(k): v for k, v in row.get("refs", {}).items()}
         if 0 not in refs:
-            raise Refuse("refs must include slot 0 — the master ref that sets the clip size")
+            raise Refuse("refs must include slot 0 — the master ref (<Picture 1>, most compositional weight)")
         for slot, rel in refs.items():
             api[g["refs"][slot]]["inputs"]["image"] = stage_input(prod, rel, proof, "ref")
         audio = {int(k): v for k, v in row.get("audio", {}).items()}
