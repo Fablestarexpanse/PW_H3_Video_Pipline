@@ -84,7 +84,11 @@ def output_files(h: dict, row: dict) -> list[Path]:
                     if isinstance(item, dict) and item.get("filename") and item.get("type", "output") == "output":
                         files.append(paths.COMFY_OUTPUT / item.get("subfolder", "") / item["filename"])
     if row.get("graph", "").startswith("mm_chain") and row.get("run_name"):
-        final = paths.COMFY_OUTPUT / "h3_chain" / row["run_name"] / "final.mp4"
+        # MiniMaxH3ChainAssemble writes via its own internal ffmpeg call, not a SaveVideo output
+        # node -- history()["outputs"] never has an entry for it. Path confirmed against a real
+        # run (2026-08-24): output/h3_chains/<run_name>/final/final.mp4 (plural "h3_chains", a
+        # "final" subfolder) -- the prior "h3_chain/<run_name>/final.mp4" guess was never right.
+        final = paths.COMFY_OUTPUT / "h3_chains" / row["run_name"] / "final" / "final.mp4"
         if final.is_file():
             files.append(final)
     return [f for f in files if f.is_file()]
