@@ -6,7 +6,9 @@ Source per beat (the named SRC): the one jobs.jsonl row for that beat (id = "<be
 with status landed — or, when several landed, the one with "pick": true. Refuses when a beat
 has no landed take, has several with no pick, or a picked file is missing / "__rej_".
 Every segment is rebuilt from its SRC with trim=start_frame=HEAD:end_frame=HEAD+frames
-(frames from beats.csv) and setpts reset, -preset veryfast -crf 16 yuv420p 24 fps.
+(frames from beats.csv) and setpts reset, -preset veryfast -crf 16 yuv420p 24 fps, scaled to the
+board's canvas (the most common SRC resolution — a board mixing mm_clip_v1 and mm_chain_v1 has two
+native output sizes; every segment is scaled to match regardless of source graph).
 Segments are VIDEO ONLY (audio in a segment gives the concat an edit-list offset and a
 non-monotonic DTS at the first boundary). Audio: the identity.AUDIO master, or the clips' own
 audio trimmed per segment to PCM and concatenated; either is muxed once over the stream-copied
@@ -30,6 +32,7 @@ import json
 import shutil
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -132,10 +135,22 @@ def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry:
     if seg_dir.exists():
         shutil.rmtree(seg_dir)          # the cut's own segments only; never a render
     seg_dir.mkdir(parents=True)
+    # A board can mix graph families with different native output geometry (mm_clip_v1 sizes from
+    # its ref; mm_chain_v1 is fixed 960x544) -- stream-copy concat silently accepts mismatched
+    # segment resolutions without erroring (measured 2026-08-24: cutqc caught it after the fact,
+    # nothing in assemble.py had refused). Canvas = the LARGEST source resolution on this board (by
+    # pixel area), so no beat's own resolution is ever needlessly thrown away to match a smaller
+    # one just because it happens to be more common; every segment scales to it explicitly, even
+    # ones that already match (a no-op scale costs nothing and keeps one code path instead of two).
+    sizes = Counter((landed.probe(clips / s["file"])["width"], landed.probe(clips / s["file"])["height"]) for s in srcs)
+    canvas_w, canvas_h = max(sizes, key=lambda wh: wh[0] * wh[1])
+    native = sum(c for wh, c in sizes.items() if wh == (canvas_w, canvas_h))
+    print(f"  canvas {canvas_w}x{canvas_h} ({native}/{len(srcs)} beats native; others upscaled)")
     lst = []
     for p in plan:
         seg = seg_dir / f"seg_{p['slot']:02d}.mp4"
-        vf = f"trim=start_frame={head}:end_frame={head + p['frames']},setpts=PTS-STARTPTS,fps={FPS},format=yuv420p"
+        vf = (f"trim=start_frame={head}:end_frame={head + p['frames']},setpts=PTS-STARTPTS,"
+              f"fps={FPS},scale={canvas_w}:{canvas_h},format=yuv420p")
         # Video-only segments: audio in a segment gives the concat an edit-list offset and a
         # non-monotonic DTS at the first boundary (measured 2026-08-23: 933 frames read as 934).
         run([str(paths.FFMPEG), "-y", "-loglevel", "error", "-i", p["src"], "-vf", vf, "-an",
