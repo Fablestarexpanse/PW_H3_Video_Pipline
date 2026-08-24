@@ -1,13 +1,17 @@
 """cutqc.py — measure the delivered cut, never the plan (spec §3).
 
-  python tools/cutqc.py <cut.json>        the table assemble.py wrote beside the master
+  python tools/cutqc.py <cut.json> [--occlusion-beats b07,b09]
+
+--occlusion-beats: comma-separated beat names (matching meta.slots[].beat) whose frame range in the
+master is exempt from the black check — a scripted blackout or a cut-to-black ending is the design,
+not a fault. Never exempts blown; a beat can go dark on purpose, never overexposed on purpose.
 
 Refuses (exit 1) on any mismatch — never loosen a tolerance:
   frames     master frame count != meta.total_frames (beats.csv sum, minus transition overlap
              when the cut has one)
   streams    any segment's codec / width / height / frame rate / pix_fmt differs from the rest,
              or from the master
-  blown      any frame mean luminance > 150       black   any frame < 8
+  blown      any frame mean luminance > 150       black   any frame < 8, outside --occlusion-beats
   boundary   HARD CUT (no transition): at every slot boundary F_k the master's frame F_k is not
              the first frame of segment k+1 and frame F_k-1 is not the last frame of segment k
              (decimated-frame correlation < 0.98) — a stale or mis-trimmed segment shows here.
@@ -53,9 +57,16 @@ def sig(v: dict) -> tuple:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 1:
+    occlusion_beats: set[str] = set()
+    pos = []
+    for a in argv:
+        if a.startswith("--occlusion-beats="):
+            occlusion_beats = {b.strip() for b in a.split("=", 1)[1].split(",") if b.strip()}
+        else:
+            pos.append(a)
+    if len(pos) != 1:
         print(__doc__); return 1
-    meta = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
+    meta = json.loads(Path(pos[0]).read_text(encoding="utf-8"))
     master = Path(meta["master"])
     faults = []
 
@@ -82,8 +93,16 @@ def main(argv: list[str]) -> int:
 
     lum = A.reshape(n, -1).mean(1)
     blown = np.where(lum > clipqc.THRESH["blown"])[0]
-    black = np.where(lum < clipqc.THRESH["black"])[0]
-    print(f"measured  luminance mean {lum.mean():.1f} min {lum.min():.1f} max {lum.max():.1f}; blown {list(blown[:8])} black {list(black[:8])}")
+    black_all = np.where(lum < clipqc.THRESH["black"])[0]
+    occluded = np.zeros(n, dtype=bool)
+    for slot in meta["slots"]:
+        if slot["beat"] in occlusion_beats:
+            start, end = slot["end_frame"] - slot["frames"], slot["end_frame"]
+            occluded[max(0, start):min(n, end)] = True
+    black = black_all[~occluded[black_all]]
+    exempted = len(black_all) - len(black)
+    tag = f" ({exempted} in --occlusion-beats {sorted(occlusion_beats)})" if exempted else ""
+    print(f"measured  luminance mean {lum.mean():.1f} min {lum.min():.1f} max {lum.max():.1f}; blown {list(blown[:8])} black {list(black[:8])}{tag}")
     if len(blown):
         faults.append(f"blown frames {list(blown[:12])}")
     if len(black):

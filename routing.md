@@ -71,6 +71,25 @@ int8 model — it is the one candidate under (a), pending a proof segment.
   side and pushes the plate's centerline off-frame-center dropped it to 0.10 with an unchanged cast
   and location (2026-08-23). Don't leave framing at "medium-wide" defaults on a plate with strong
   bilateral symmetry (an arch, a hearth, a symmetric facade).
+- **A near-black night scene needs its practical light source to visibly illuminate the subject, not
+  just glow beside them**, or `ref_leak` reads high even with the subject clearly present: at the
+  metric's 64x36 decimation a small dark-clothed figure against an already near-black background
+  contributes almost no differentiating signal from the empty plate. Seed-only reroll (the fix for a
+  genuine leak elsewhere) was unreliable here -- results swung both directions on how much light the
+  model happened to render (last_light forest: 0.63→0.95→0.53→0.91 across four seeds, subject visibly
+  present in every filmstrip). Double-anchoring "the lantern's light washes onto her face/hands/
+  cloak, she reads as warm-lit, never a flat dark silhouette" across subject_definitions,
+  retention_analysis AND detailed_description fixed it on the next seed (0.47) (2026-08-23).
+- **When a shot's framing shows most of a plate's own architecture, tighten the frame rather than
+  just add camera-angle wording** — a locked medium-close shot on the subject that shows only a
+  fragment of the reference plate leaks far less than a wide shot showing most of it, even at the
+  same location and lighting. last_light's "hang the lantern" beat: a wide shot with the whole
+  shrine tree filling the frame above her leaked 0.94-0.95 across two seeds (two different failure
+  points — the static opening, then the mid-shot dimming transition — same root cause both times);
+  reframing to a medium-close shot showing only one branch, not the whole tree, passed clean on the
+  next seed (0.21) with the identical action and lighting. Explicit off-axis camera wording (used
+  earlier on a wide symmetric corridor shot) is not reliably realized by the model — tightening the
+  frame is more dependable than asking for asymmetry when the composition allows it (2026-08-23).
 
 ## Retired / not routed
 Everything in ComfyUI `workflows/archive/` (95 graphs, moved 2026-08-22, not deleted). No

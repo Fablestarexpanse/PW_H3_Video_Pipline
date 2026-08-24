@@ -143,8 +143,14 @@ def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry:
         if own_audio:
             t0, t1 = head / FPS, (head + p["frames"]) / FPS
             wav = seg.with_suffix(".wav")
+            # H3's own audio track is not always frame-tight to its video length (measured
+            # 2026-08-23: a 209-frame clip's audio ran 8.3ms short of the requested atrim window) --
+            # apad to the exact requested duration so every segment is sample-accurate regardless of
+            # what the source actually delivered; never let cutqc's audio-vs-picture check be the
+            # thing papering over a short segment.
             run([str(paths.FFMPEG), "-y", "-loglevel", "error", "-i", p["src"], "-vn",
-                 "-af", f"atrim=start={t0}:end={t1},asetpts=PTS-STARTPTS", "-c:a", "pcm_s16le", "-ar", "48000", str(wav)])
+                 "-af", f"atrim=start={t0}:end={t1},asetpts=PTS-STARTPTS,apad=whole_dur={t1 - t0:.6f}",
+                 "-c:a", "pcm_s16le", "-ar", "48000", str(wav)])
             p["audio_segment"] = str(wav)
         got = landed.probe(seg)["frames"]
         if got != p["frames"]:
