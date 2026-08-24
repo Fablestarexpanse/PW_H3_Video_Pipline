@@ -20,6 +20,7 @@ UNIT_RE = re.compile(r"^S\d{2}E\d{2} - .+$")           # show units
 CHAR_RE = re.compile(r"^[a-z0-9_]+\.md$|^_TEMPLATE\.md$")
 APPROVED_RE = re.compile(r"^[A-Za-z0-9_]+_APPROVED_\d+\.png$")
 LINES_RE = re.compile(r"^[a-z0-9_]+\.lines$")
+AUDIO_RE = re.compile(r"^[a-z0-9_]+\.(wav|mp3|flac|m4a)$")
 
 # Files every production must have at its root (relative), copied from TEMPLATE_DIR.
 ROOT_REQUIRED = (
@@ -79,6 +80,11 @@ def allowed(prod: Path, fmt: str, rel: Path) -> bool:
         return len(parts) == 2 and bool(CHAR_RE.match(parts[1]))
     if head == "refs":
         return len(parts) == 2 and (parts[1] == "manifest.json" or bool(APPROVED_RE.match(parts[1])))
+    if head == "audio":
+        # an external track a production draws on (identity.AUDIO master/stem, plus any extra
+        # stems the production keeps for its own reference, e.g. an instrumental-only mix). Never
+        # in git (paths.py/media convention); the folder itself is production-owned content.
+        return len(parts) == 2 and bool(AUDIO_RE.match(parts[1]))
     if head == "__pycache__":
         return True  # gitignored; never committed
     if fmt == "film" and head == "prompts":
