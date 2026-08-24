@@ -1,6 +1,6 @@
 """assemble.py — frame-exact segments, stream-copy concat, full rebuild every time (spec §3).
 
-  python tools/assemble.py <slug> <unit|.> <cut_name> [--head 24] [--transition N] [--dry-run]
+  python tools/assemble.py <slug> <unit|.> <cut_name> [--head 24] [--transition N] [--device NAME] [--dry-run]
 
 Source per beat (the named SRC): the one jobs.jsonl row for that beat (id = "<beat>_s<seed>")
 with status landed — or, when several landed, the one with "pick": true. Refuses when a beat
@@ -15,11 +15,13 @@ audio trimmed per segment to PCM and concatenated; either is muxed once over the
 picture with atrim to the exact picture length (audio == picture to the sample).
 
 --transition N (frames, default 0 = hard cut): every internal slot boundary becomes an N-frame
-crossfade dissolve instead of a stream-copy join. Each transition consumes N frames from the tail
-of the earlier segment and N frames from the head of the later one (standard editorial overlap),
-so the master is (n_slots-1)*N frames SHORTER than the sum of beats.csv frames — this is by
-design, not a fault; cutqc checks against the true post-transition total, not the beats.csv sum.
-Requires re-encoding via ffmpeg's xfade/acrossfade filters (no stream-copy path when N>0).
+transition instead of a stream-copy join. --device NAME picks which one (default "dissolve";
+`python tools/devices.py` lists the library, `--sheet` renders a demo of every one). Each
+transition consumes N frames from the tail of the earlier segment and N frames from the head of
+the later one (standard editorial overlap), so the master is (n_slots-1)*N frames SHORTER than
+the sum of beats.csv frames — this is by design, not a fault; cutqc checks against the true
+post-transition total, not the beats.csv sum. Requires re-encoding via ffmpeg's xfade/acrossfade
+filters (no stream-copy path when N>0).
 
 Writes <media>/<unit>/cuts/<cut_name>.mp4 and <cut_name>.json (SRC table, LEN, boundaries,
 transition). Never deletes a render; only the cut's own segments are rebuilt.
@@ -39,6 +41,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+import devices  # noqa: E402
 import landed  # noqa: E402
 import paths  # noqa: E402
 import render  # noqa: E402
@@ -94,8 +97,10 @@ def run(cmd: list[str]) -> None:
         raise Refuse(f"ffmpeg failed: {' '.join(cmd[:6])}…\n{r.stderr[-800:]}")
 
 
-def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry: bool) -> int:
+def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, device: str, dry: bool) -> int:
     ident = skeleton.load_identity(prod)
+    if transition and device not in devices.DEVICES:
+        raise Refuse(f"--device {device!r} is not in devices.DEVICES — run `python tools/devices.py` to list them")
     beats = beats_of(unit)
     if not beats:
         raise Refuse("beats.csv is empty")
@@ -109,7 +114,7 @@ def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry:
     master_audio = (prod / ident.AUDIO["master"]) if ident.AUDIO.get("master") else None
     own_audio = master_audio is None
 
-    trans_note = f", {transition}f dissolve" if transition else ", hard cuts"
+    trans_note = f", {transition}f {device}" if transition else ", hard cuts"
     print(f"SRC table for {name} (head {head} f, {'master audio' if master_audio else 'clip audio'}{trans_note}):")
     total = 0
     plan = []
@@ -177,8 +182,9 @@ def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry:
     picture = cuts / f"{name}_picture.mp4"
     transition_meta = {"type": "cut", "frames": 0, "boundaries": []}
     if transition:
-        final_total, boundaries = build_xfade_video(lst, [p["frames"] for p in plan], transition, picture)
-        transition_meta = {"type": "dissolve", "frames": transition, "boundaries": boundaries}
+        xfade = devices.DEVICES[device]["xfade"]
+        final_total, boundaries = build_xfade_video(lst, [p["frames"] for p in plan], transition, picture, xfade)
+        transition_meta = {"type": device, "frames": transition, "boundaries": boundaries}
     else:
         listfile = seg_dir / "concat.txt"
         listfile.write_text("".join(f"file '{s.as_posix()}'\n" for s in lst), encoding="utf-8")
@@ -192,7 +198,7 @@ def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry:
     elif transition:
         wavs = [Path(p["audio_segment"]) for p in plan]
         audio_src = seg_dir / "audio.wav"
-        build_xfade_audio(wavs, [p["frames"] for p in plan], transition, audio_src)
+        build_xfade_audio(wavs, [p["frames"] for p in plan], transition, audio_src, devices.DEVICES[device]["audio"])
     else:
         alist = seg_dir / "concat_audio.txt"
         alist.write_text("".join(f"file '{Path(p['audio_segment']).as_posix()}'\n" for p in plan), encoding="utf-8")
@@ -228,9 +234,10 @@ def assemble(prod: Path, unit: Path, name: str, head: int, transition: int, dry:
     return 0
 
 
-def build_xfade_video(segs: list[Path], frames: list[int], D: int, out: Path) -> tuple[int, list[int]]:
+def build_xfade_video(segs: list[Path], frames: list[int], D: int, out: Path, xfade: str) -> tuple[int, list[int]]:
     """Chain xfade across all segments. offset_k = duration(merged_k) - D, in seconds
-    (duration(merged_k) = sum(frames[:k+1]) - k*D frames — each prior xfade already ate D frames)."""
+    (duration(merged_k) = sum(frames[:k+1]) - k*D frames — each prior xfade already ate D frames).
+    xfade is the ffmpeg xfade transition type — looked up from devices.DEVICES by name, never typed here."""
     n = len(segs)
     inputs: list[str] = []
     for s in segs:
@@ -243,7 +250,7 @@ def build_xfade_video(segs: list[Path], frames: list[int], D: int, out: Path) ->
         off_frames = cum - D
         boundaries.append(off_frames)
         out_lbl = f"[v{k}]"
-        filt.append(f"{prev}[{k}:v]xfade=transition=fade:duration={D / FPS:.6f}:offset={off_frames / FPS:.6f}{out_lbl}")
+        filt.append(f"{prev}[{k}:v]xfade=transition={xfade}:duration={D / FPS:.6f}:offset={off_frames / FPS:.6f}{out_lbl}")
         cum = cum + frames[k] - D
         prev = out_lbl
     final_lbl = prev.strip("[]")
@@ -253,7 +260,7 @@ def build_xfade_video(segs: list[Path], frames: list[int], D: int, out: Path) ->
     return cum, boundaries
 
 
-def build_xfade_audio(wavs: list[Path], frames: list[int], D: int, out: Path) -> None:
+def build_xfade_audio(wavs: list[Path], frames: list[int], D: int, out: Path, curve: str) -> None:
     n = len(wavs)
     inputs: list[str] = []
     for w in wavs:
@@ -262,7 +269,7 @@ def build_xfade_audio(wavs: list[Path], frames: list[int], D: int, out: Path) ->
     prev = "[0:a]"
     for k in range(1, n):
         out_lbl = f"[a{k}]"
-        filt.append(f"{prev}[{k}:a]acrossfade=d={D / FPS:.6f}:c1=tri:c2=tri{out_lbl}")
+        filt.append(f"{prev}[{k}:a]acrossfade=d={D / FPS:.6f}:c1={curve}:c2={curve}{out_lbl}")
         prev = out_lbl
     final_lbl = prev.strip("[]")
     run([str(paths.FFMPEG), "-y", "-loglevel", "error", *inputs, "-filter_complex", ";".join(filt),
@@ -273,12 +280,13 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(add_help=False)
     ap.add_argument("slug"); ap.add_argument("unit"); ap.add_argument("name")
     ap.add_argument("--head", type=int, default=24); ap.add_argument("--transition", type=int, default=0)
+    ap.add_argument("--device", default="dissolve")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)
     prod = skeleton.PRODUCTIONS / a.slug
     unit = prod if a.unit == "." else prod / a.unit
     try:
-        return assemble(prod, unit, a.name, a.head, a.transition, a.dry_run)
+        return assemble(prod, unit, a.name, a.head, a.transition, a.device, a.dry_run)
     except Refuse as e:
         print(f"\nREFUSE: {e}")
         return 1

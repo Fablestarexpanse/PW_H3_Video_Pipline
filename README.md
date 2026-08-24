@@ -79,3 +79,13 @@ UI; jobs are data (`jobs.jsonl`), never a saved graph variant.
 - `render.py` sets widgets and node modes only — never adds, removes, or rewires a node.
 - Media (renders, refs, audio) lives at `F:\MovieMaker\`, mirroring `productions/`, and never
   enters git except approved `*_APPROVED_*.png` reference stills.
+
+## Acknowledgements
+
+`tools/contact.py` (a one-sheet grid of every approved reference) and `tools/devices.py` (a named,
+pluggable transition library for `assemble.py`) were inspired by the equivalent tools in Garrett
+Bloome's [rtome-showrunner-pipeline](https://github.com/KerbalTheGathering/rtome-showrunner-pipeline),
+an independently developed, unaffiliated sibling ComfyUI production pipeline. Both are from-scratch
+reimplementations against this repo's own layout and stack (`devices.py` in particular uses
+ffmpeg's built-in `xfade` catalog rather than his hand-written PIL compositing), not ports of his
+code.
